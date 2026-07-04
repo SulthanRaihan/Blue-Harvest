@@ -122,6 +122,11 @@ body {
 .badge-worst  { background: var(--color-risk-worst-bg);  color: var(--color-risk-worst);  }
 
 /* ── Animations (GSAP supplements) ───────────────────────── */
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.15; }
+  50%       { transform: scale(1.15); opacity: 0.25; }
+}
+
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
