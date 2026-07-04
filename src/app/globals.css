@@ -1,26 +1,140 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/* ── Deep Ocean Design Tokens ─────────────────────────────── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Brand Colors */
+  --color-ocean-950: #020d1a;
+  --color-ocean-900: #0b2d4e;
+  --color-ocean-800: #0e3a63;
+  --color-ocean-700: #114d82;
+  --color-ocean-600: #1560a0;
+  --color-ocean-500: #1974be;
+  --color-ocean-400: #3d8fd1;
+  --color-ocean-300: #6aaee0;
+  --color-ocean-200: #a8d1ef;
+  --color-ocean-100: #d4e9f8;
+  --color-ocean-50:  #eef6fc;
+
+  --color-teal-700: #0d766d;
+  --color-teal-600: #0d9488;
+  --color-teal-500: #14b8a6;
+  --color-teal-400: #2dd4bf;
+  --color-teal-100: #ccfbf1;
+
+  --color-sky-500:  #0ea5e9;
+  --color-sky-400:  #38bdf8;
+  --color-sky-100:  #e0f2fe;
+
+  /* Semantic Aliases */
+  --color-primary:          var(--color-ocean-900);
+  --color-primary-hover:    var(--color-ocean-800);
+  --color-accent:           var(--color-sky-500);
+  --color-accent-hover:     var(--color-sky-400);
+  --color-secondary:        var(--color-teal-600);
+
+  --color-surface:          #f0f9ff;
+  --color-surface-card:     #ffffff;
+  --color-surface-muted:    #f8fafc;
+
+  --color-text-primary:     #0f172a;
+  --color-text-secondary:   #334155;
+  --color-text-muted:       #64748b;
+  --color-text-inverse:     #f8fafc;
+
+  --color-border:           #e2e8f0;
+  --color-border-focus:     var(--color-accent);
+
+  /* Risk Category Colors */
+  --color-risk-best:        #16a34a;
+  --color-risk-best-bg:     #dcfce7;
+  --color-risk-middle:      #d97706;
+  --color-risk-middle-bg:   #fef3c7;
+  --color-risk-worst:       #dc2626;
+  --color-risk-worst-bg:    #fee2e2;
+
+  /* Typography */
+  --font-sans: var(--font-geist-sans), 'Inter', system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), 'JetBrains Mono', monospace;
+
+  /* Spacing Scale (extra) */
+  --spacing-18: 4.5rem;
+  --spacing-22: 5.5rem;
+
+  /* Border Radius */
+  --radius-card:   0.875rem;
+  --radius-button: 0.5rem;
+
+  /* Shadows */
+  --shadow-card:    0 1px 3px 0 rgb(11 45 78 / 0.08), 0 4px 16px -2px rgb(11 45 78 / 0.06);
+  --shadow-card-hover: 0 4px 12px 0 rgb(11 45 78 / 0.12), 0 8px 24px -4px rgb(11 45 78 / 0.10);
+  --shadow-dropdown: 0 8px 24px -4px rgb(11 45 78 / 0.15);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ── Base Styles ──────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-ocean-200); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-ocean-400); }
+
+/* ── Focus Ring ───────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Utility Classes ──────────────────────────────────────── */
+.card {
+  background: var(--color-surface-card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
+}
+
+.card-hover {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.card-hover:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-1px);
+}
+
+.badge-best   { background: var(--color-risk-best-bg);   color: var(--color-risk-best);   }
+.badge-middle { background: var(--color-risk-middle-bg); color: var(--color-risk-middle); }
+.badge-worst  { background: var(--color-risk-worst-bg);  color: var(--color-risk-worst);  }
+
+/* ── Animations (GSAP supplements) ───────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--color-ocean-100) 25%, var(--color-ocean-50) 50%, var(--color-ocean-100) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
 }
