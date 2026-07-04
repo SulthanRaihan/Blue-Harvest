@@ -48,3 +48,11 @@ next-env.d.ts
 # Claude Code local config
 .claude/
 skills-lock.json
+
+# Project documentation & diagrams (local only)
+diagrams/
+System-Design-Document.docx
+System-Design-Document.html
+CLAUDE.md
+*.jpeg
+*.jpg
