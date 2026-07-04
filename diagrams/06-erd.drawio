@@ -1,0 +1,510 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" agent="Claude" version="24.0.0" type="device">
+  <diagram name="ERD" id="erd01">
+    <mxGraphModel dx="2800" dy="1600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3600" pageHeight="1900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="ENTITY RELATIONSHIP DIAGRAM — SISTEM INFORMASI MANAJEMEN TAMBAK" style="text;html=1;align=left;fontColor=#000000;fontSize=18;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="10" y="10" width="1400" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- ===================== ENTITIES ===================== -->
+
+        <!-- PENGGUNA -->
+        <mxCell id="tPengguna" value="PENGGUNA" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="60" y="80" width="240" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="aPengguna1" value="PK  id_pengguna" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=1;" vertex="1" parent="tPengguna">
+          <mxGeometry x="10" y="34" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aPengguna2" value="nama" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tPengguna">
+          <mxGeometry x="10" y="58" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aPengguna3" value="email" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tPengguna">
+          <mxGeometry x="10" y="80" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aPengguna4" value="password_hash" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tPengguna">
+          <mxGeometry x="10" y="102" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aPengguna5" value="role  (petambak|admin|owner|pelanggan)" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tPengguna">
+          <mxGeometry x="10" y="124" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aPengguna6" value="created_at" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tPengguna">
+          <mxGeometry x="10" y="146" width="220" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- KOLAM -->
+        <mxCell id="tKolam" value="KOLAM" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="380" y="80" width="240" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="aKolam1" value="PK  id_kolam" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=1;" vertex="1" parent="tKolam">
+          <mxGeometry x="10" y="34" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aKolam2" value="FK  id_pengguna" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=2;" vertex="1" parent="tKolam">
+          <mxGeometry x="10" y="58" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aKolam3" value="nama_kolam" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tKolam">
+          <mxGeometry x="10" y="80" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aKolam4" value="luas_ha" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tKolam">
+          <mxGeometry x="10" y="102" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aKolam5" value="lokasi" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tKolam">
+          <mxGeometry x="10" y="124" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aKolam6" value="status  (aktif|tidak_aktif)" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tKolam">
+          <mxGeometry x="10" y="146" width="220" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- KOMODITAS -->
+        <mxCell id="tKomoditas" value="KOMODITAS" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="700" y="80" width="240" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="aKom1" value="PK  id_komoditas" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=1;" vertex="1" parent="tKomoditas">
+          <mxGeometry x="10" y="34" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aKom2" value="nama  (bandeng|nila|udang_vaname)" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tKomoditas">
+          <mxGeometry x="10" y="58" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aKom3" value="target_ph_min / target_ph_max" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tKomoditas">
+          <mxGeometry x="10" y="80" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aKom4" value="target_suhu_min / target_suhu_max" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tKomoditas">
+          <mxGeometry x="10" y="102" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aKom5" value="target_do_min" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tKomoditas">
+          <mxGeometry x="10" y="124" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aKom6" value="target_salinitas_min / max" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tKomoditas">
+          <mxGeometry x="10" y="146" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aKom7" value="fcr_standar" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tKomoditas">
+          <mxGeometry x="10" y="168" width="220" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- RENCANA_TEBAR -->
+        <mxCell id="tRencana" value="RENCANA_TEBAR" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="80" width="240" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="aR1" value="PK  id_rencana" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=1;" vertex="1" parent="tRencana">
+          <mxGeometry x="10" y="34" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aR2" value="FK  id_kolam" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=2;" vertex="1" parent="tRencana">
+          <mxGeometry x="10" y="58" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aR3" value="FK  id_komoditas" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=2;" vertex="1" parent="tRencana">
+          <mxGeometry x="10" y="80" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aR4" value="FK  id_approved_by" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=2;" vertex="1" parent="tRencana">
+          <mxGeometry x="10" y="102" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aR5" value="modal_rp" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tRencana">
+          <mxGeometry x="10" y="124" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aR6" value="jumlah_benih" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tRencana">
+          <mxGeometry x="10" y="146" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aR7" value="tanggal_rencana" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tRencana">
+          <mxGeometry x="10" y="168" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aR8" value="status  (draft|approved|aktif|selesai)" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tRencana">
+          <mxGeometry x="10" y="190" width="220" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- FAKTOR_RISIKO -->
+        <mxCell id="tFaktor" value="FAKTOR_RISIKO" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1340" y="80" width="240" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="aF1" value="PK  id_faktor" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=1;" vertex="1" parent="tFaktor">
+          <mxGeometry x="10" y="34" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aF2" value="nama_faktor  (hama|cuaca|pasar|sdm)" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tFaktor">
+          <mxGeometry x="10" y="58" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aF3" value="deskripsi" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tFaktor">
+          <mxGeometry x="10" y="80" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aF4" value="bobot_default" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tFaktor">
+          <mxGeometry x="10" y="102" width="220" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- SKORING_RISIKO -->
+        <mxCell id="tSkoring" value="SKORING_RISIKO" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1340" y="320" width="240" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="aSk1" value="PK  id_skoring" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=1;" vertex="1" parent="tSkoring">
+          <mxGeometry x="10" y="34" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aSk2" value="FK  id_rencana" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=2;" vertex="1" parent="tSkoring">
+          <mxGeometry x="10" y="58" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aSk3" value="total_skor" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tSkoring">
+          <mxGeometry x="10" y="80" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aSk4" value="kategori  (best|middle|worst)" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tSkoring">
+          <mxGeometry x="10" y="102" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aSk5" value="created_at" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tSkoring">
+          <mxGeometry x="10" y="124" width="220" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- DETAIL_SKORING -->
+        <mxCell id="tDetailSkoring" value="DETAIL_SKORING" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1660" y="200" width="240" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="aDs1" value="PK  id_detail" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=1;" vertex="1" parent="tDetailSkoring">
+          <mxGeometry x="10" y="34" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aDs2" value="FK  id_skoring" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=2;" vertex="1" parent="tDetailSkoring">
+          <mxGeometry x="10" y="58" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aDs3" value="FK  id_faktor" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=2;" vertex="1" parent="tDetailSkoring">
+          <mxGeometry x="10" y="80" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aDs4" value="nilai_potensi  (1–5)" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tDetailSkoring">
+          <mxGeometry x="10" y="102" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aDs5" value="nilai_dampak  (1–5)" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tDetailSkoring">
+          <mxGeometry x="10" y="124" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aDs6" value="skor_hasil  (potensi x dampak)" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tDetailSkoring">
+          <mxGeometry x="10" y="146" width="220" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- KUALITAS_AIR -->
+        <mxCell id="tKualitasAir" value="KUALITAS_AIR" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="380" y="440" width="240" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="aKA1" value="PK  id_kualitas" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=1;" vertex="1" parent="tKualitasAir">
+          <mxGeometry x="10" y="34" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aKA2" value="FK  id_kolam" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=2;" vertex="1" parent="tKualitasAir">
+          <mxGeometry x="10" y="58" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aKA3" value="timestamp" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tKualitasAir">
+          <mxGeometry x="10" y="80" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aKA4" value="ph" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tKualitasAir">
+          <mxGeometry x="10" y="102" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aKA5" value="do_ppm" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tKualitasAir">
+          <mxGeometry x="10" y="124" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aKA6" value="suhu_celsius" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tKualitasAir">
+          <mxGeometry x="10" y="146" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aKA7" value="salinitas_ppt" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tKualitasAir">
+          <mxGeometry x="10" y="168" width="220" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- OPERASIONAL_HARIAN -->
+        <mxCell id="tOperasional" value="OPERASIONAL_HARIAN" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="700" y="440" width="240" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="aOp1" value="PK  id_operasional" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=1;" vertex="1" parent="tOperasional">
+          <mxGeometry x="10" y="34" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aOp2" value="FK  id_rencana" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=2;" vertex="1" parent="tOperasional">
+          <mxGeometry x="10" y="58" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aOp3" value="tanggal" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tOperasional">
+          <mxGeometry x="10" y="80" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aOp4" value="jumlah_pakan_kg" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tOperasional">
+          <mxGeometry x="10" y="102" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aOp5" value="jenis_pakan" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tOperasional">
+          <mxGeometry x="10" y="124" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aOp6" value="catatan_hama_penyakit" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tOperasional">
+          <mxGeometry x="10" y="146" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aOp7" value="tindakan" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tOperasional">
+          <mxGeometry x="10" y="168" width="220" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- SAMPLING_PERTUMBUHAN -->
+        <mxCell id="tSampling" value="SAMPLING_PERTUMBUHAN" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="440" width="240" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="aSp1" value="PK  id_sampling" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=1;" vertex="1" parent="tSampling">
+          <mxGeometry x="10" y="34" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aSp2" value="FK  id_rencana" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=2;" vertex="1" parent="tSampling">
+          <mxGeometry x="10" y="58" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aSp3" value="tanggal" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tSampling">
+          <mxGeometry x="10" y="80" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aSp4" value="minggu_ke" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tSampling">
+          <mxGeometry x="10" y="102" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aSp5" value="rata_berat_gram" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tSampling">
+          <mxGeometry x="10" y="124" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aSp6" value="estimasi_populasi" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tSampling">
+          <mxGeometry x="10" y="146" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aSp7" value="fcr" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tSampling">
+          <mxGeometry x="10" y="168" width="220" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- NOTIFIKASI -->
+        <mxCell id="tNotifikasi" value="NOTIFIKASI" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="60" y="440" width="240" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="aN1" value="PK  id_notifikasi" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=1;" vertex="1" parent="tNotifikasi">
+          <mxGeometry x="10" y="34" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aN2" value="FK  id_pengguna" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=2;" vertex="1" parent="tNotifikasi">
+          <mxGeometry x="10" y="58" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aN3" value="FK  id_kolam" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=2;" vertex="1" parent="tNotifikasi">
+          <mxGeometry x="10" y="80" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aN4" value="pesan" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tNotifikasi">
+          <mxGeometry x="10" y="102" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aN5" value="jenis  (alarm|info)" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tNotifikasi">
+          <mxGeometry x="10" y="124" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aN6" value="is_read  |  created_at" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tNotifikasi">
+          <mxGeometry x="10" y="146" width="220" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- PANEN -->
+        <mxCell id="tPanen" value="PANEN" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="700" y="800" width="240" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="aPn1" value="PK  id_panen" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=1;" vertex="1" parent="tPanen">
+          <mxGeometry x="10" y="34" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aPn2" value="FK  id_rencana" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=2;" vertex="1" parent="tPanen">
+          <mxGeometry x="10" y="58" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aPn3" value="tanggal_panen" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tPanen">
+          <mxGeometry x="10" y="80" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aPn4" value="total_bobot_kg" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tPanen">
+          <mxGeometry x="10" y="102" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aPn5" value="grade  (A|B|C)" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tPanen">
+          <mxGeometry x="10" y="124" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aPn6" value="harga_per_kg" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tPanen">
+          <mxGeometry x="10" y="146" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aPn7" value="total_pendapatan" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tPanen">
+          <mxGeometry x="10" y="168" width="220" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- PELANGGAN -->
+        <mxCell id="tPelanggan" value="PELANGGAN" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1340" y="800" width="240" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="aPl1" value="PK  id_pelanggan" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=1;" vertex="1" parent="tPelanggan">
+          <mxGeometry x="10" y="34" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aPl2" value="nama" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tPelanggan">
+          <mxGeometry x="10" y="58" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aPl3" value="kontak" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tPelanggan">
+          <mxGeometry x="10" y="80" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aPl4" value="tipe  (pengepul|pasar|restoran|eksportir)" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tPelanggan">
+          <mxGeometry x="10" y="102" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aPl5" value="alamat" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tPelanggan">
+          <mxGeometry x="10" y="124" width="220" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- DISTRIBUSI -->
+        <mxCell id="tDistribusi" value="DISTRIBUSI" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="800" width="240" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="aDi1" value="PK  id_distribusi" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=1;" vertex="1" parent="tDistribusi">
+          <mxGeometry x="10" y="34" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aDi2" value="FK  id_panen" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=2;" vertex="1" parent="tDistribusi">
+          <mxGeometry x="10" y="58" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aDi3" value="FK  id_pelanggan" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=2;" vertex="1" parent="tDistribusi">
+          <mxGeometry x="10" y="80" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aDi4" value="tanggal" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tDistribusi">
+          <mxGeometry x="10" y="102" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aDi5" value="bobot_kg" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tDistribusi">
+          <mxGeometry x="10" y="124" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aDi6" value="harga_jual_per_kg" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tDistribusi">
+          <mxGeometry x="10" y="146" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aDi7" value="status  (pending|selesai)" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tDistribusi">
+          <mxGeometry x="10" y="168" width="220" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- LAPORAN -->
+        <mxCell id="tLaporan" value="LAPORAN" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="380" y="800" width="240" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="aLp1" value="PK  id_laporan" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=1;" vertex="1" parent="tLaporan">
+          <mxGeometry x="10" y="34" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aLp2" value="FK  id_rencana" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=2;" vertex="1" parent="tLaporan">
+          <mxGeometry x="10" y="58" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aLp3" value="FK  id_approved_by" style="text;html=1;align=left;fontColor=#000000;fontSize=12;fontStyle=2;" vertex="1" parent="tLaporan">
+          <mxGeometry x="10" y="80" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aLp4" value="periode" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tLaporan">
+          <mxGeometry x="10" y="102" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aLp5" value="total_produksi_kg" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tLaporan">
+          <mxGeometry x="10" y="124" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aLp6" value="total_biaya" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tLaporan">
+          <mxGeometry x="10" y="146" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aLp7" value="total_pendapatan" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tLaporan">
+          <mxGeometry x="10" y="168" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="aLp8" value="fcr_rata  |  created_at" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="tLaporan">
+          <mxGeometry x="10" y="190" width="220" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- ===================== RELATIONSHIPS ===================== -->
+
+        <!-- PENGGUNA 1 — N KOLAM -->
+        <mxCell id="rel1" value="1        N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;endArrow=ERmany;startArrow=ERone;fillColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=12;fontStyle=1;" edge="1" parent="1" source="tPengguna" target="tKolam">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- KOLAM 1 — N RENCANA_TEBAR -->
+        <mxCell id="rel2" value="1        N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;endArrow=ERmany;startArrow=ERone;fillColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=12;fontStyle=1;" edge="1" parent="1" source="tKolam" target="tRencana">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- KOMODITAS 1 — N RENCANA_TEBAR -->
+        <mxCell id="rel3" value="1        N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;endArrow=ERmany;startArrow=ERone;fillColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=12;fontStyle=1;" edge="1" parent="1" source="tKomoditas" target="tRencana">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- PENGGUNA 1 — N RENCANA (approved_by) -->
+        <mxCell id="rel4" value="approve" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;endArrow=ERmany;startArrow=ERone;fillColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=11;dashed=1;" edge="1" parent="1" source="tPengguna" target="tRencana">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="180" y="60" />
+              <mxPoint x="1140" y="60" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- RENCANA_TEBAR 1 — 1 SKORING_RISIKO -->
+        <mxCell id="rel5" value="1        1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;endArrow=ERone;startArrow=ERone;fillColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=12;fontStyle=1;" edge="1" parent="1" source="tRencana" target="tSkoring">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1260" y="200" />
+              <mxPoint x="1460" y="200" />
+              <mxPoint x="1460" y="320" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- SKORING_RISIKO 1 — N DETAIL_SKORING -->
+        <mxCell id="rel6" value="1        N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;endArrow=ERmany;startArrow=ERone;fillColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=12;fontStyle=1;" edge="1" parent="1" source="tSkoring" target="tDetailSkoring">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- FAKTOR_RISIKO 1 — N DETAIL_SKORING -->
+        <mxCell id="rel7" value="1        N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;endArrow=ERmany;startArrow=ERone;fillColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=12;fontStyle=1;" edge="1" parent="1" source="tFaktor" target="tDetailSkoring">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- KOLAM 1 — N KUALITAS_AIR -->
+        <mxCell id="rel8" value="1        N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;endArrow=ERmany;startArrow=ERone;fillColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=12;fontStyle=1;" edge="1" parent="1" source="tKolam" target="tKualitasAir">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- RENCANA_TEBAR 1 — N OPERASIONAL_HARIAN -->
+        <mxCell id="rel9" value="1        N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;endArrow=ERmany;startArrow=ERone;fillColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=12;fontStyle=1;" edge="1" parent="1" source="tRencana" target="tOperasional">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- RENCANA_TEBAR 1 — N SAMPLING_PERTUMBUHAN -->
+        <mxCell id="rel10" value="1        N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;endArrow=ERmany;startArrow=ERone;fillColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=12;fontStyle=1;" edge="1" parent="1" source="tRencana" target="tSampling">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- RENCANA_TEBAR 1 — N PANEN -->
+        <mxCell id="rel11" value="1        N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;endArrow=ERmany;startArrow=ERone;fillColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=12;fontStyle=1;" edge="1" parent="1" source="tRencana" target="tPanen">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1140" y="760" />
+              <mxPoint x="820" y="760" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- PANEN 1 — N DISTRIBUSI -->
+        <mxCell id="rel12" value="1        N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;endArrow=ERmany;startArrow=ERone;fillColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=12;fontStyle=1;" edge="1" parent="1" source="tPanen" target="tDistribusi">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- PELANGGAN 1 — N DISTRIBUSI -->
+        <mxCell id="rel13" value="1        N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;endArrow=ERmany;startArrow=ERone;fillColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=12;fontStyle=1;" edge="1" parent="1" source="tPelanggan" target="tDistribusi">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- RENCANA_TEBAR 1 — 1 LAPORAN -->
+        <mxCell id="rel14" value="1        1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;endArrow=ERone;startArrow=ERone;fillColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=12;fontStyle=1;" edge="1" parent="1" source="tRencana" target="tLaporan">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1140" y="780" />
+              <mxPoint x="500" y="780" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- PENGGUNA 1 — N NOTIFIKASI -->
+        <mxCell id="rel15" value="1        N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;endArrow=ERmany;startArrow=ERone;fillColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=12;fontStyle=1;" edge="1" parent="1" source="tPengguna" target="tNotifikasi">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- KOLAM 1 — N NOTIFIKASI -->
+        <mxCell id="rel16" value="1        N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;endArrow=ERmany;startArrow=ERone;fillColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=12;fontStyle=1;" edge="1" parent="1" source="tKolam" target="tNotifikasi">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="380" y="560" />
+              <mxPoint x="300" y="560" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legBox" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;dashed=1;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="1660" y="800" width="600" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="legTitle" value="KETERANGAN:" style="text;html=1;align=left;fontColor=#000000;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1680" y="815" width="200" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="legPK" value="PK = Primary Key (cetak tebal)" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1680" y="840" width="350" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="legFK" value="FK = Foreign Key (cetak miring)" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1680" y="862" width="350" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="legOne" value="1 — 1 = One to One" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1680" y="884" width="200" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="legMany" value="1 — N = One to Many" style="text;html=1;align=left;fontColor=#000000;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1680" y="906" width="200" height="22" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

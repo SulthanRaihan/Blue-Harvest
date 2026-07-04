@@ -1,0 +1,178 @@
+<mxfile host="app.diagrams.net" agent="Claude" version="24.0.0" type="device">
+  <diagram name="Arsitektur Sistem" id="arsitektur_v3">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1640" pageHeight="860" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        
+        <mxCell id="title" value="ARSITEKTUR SISTEM BLUE HARVEST (Sistem Informasi Manajemen Tambak)" style="text;html=1;align=left;fontColor=#000000;fontSize=15;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="20" y="12" width="1580" height="26" as="geometry" />
+        </mxCell>
+
+        
+        
+        
+
+        <mxCell id="supa_box" value="" style="rounded=0;html=1;fillColor=none;strokeColor=#000000;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="20" y="50" width="940" height="760" as="geometry" />
+        </mxCell>
+        <mxCell id="supa_lbl" value="SUPABASE PLATFORM" style="text;html=1;align=center;fontColor=#000000;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="270" y="56" width="440" height="24" as="geometry" />
+        </mxCell>
+
+        
+        <mxCell id="col1_lbl" value="API &amp; Autentikasi" style="text;html=1;align=center;fontColor=#000000;fontSize=10;fontStyle=3;" vertex="1" parent="1">
+          <mxGeometry x="40" y="88" width="270" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="postgrest" value="PostgREST&#10;(Auto-generated REST API)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="112" width="270" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="realtime" value="Realtime Engine&#10;(WebSocket — live update dashboard)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="190" width="270" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="auth_svc" value="Auth Service&#10;(JWT — role: Petambak / Admin / Owner / Pelanggan)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="268" width="270" height="58" as="geometry" />
+        </mxCell>
+
+        
+        <mxCell id="supa_hdiv" value="" style="line;strokeColor=#000000;strokeWidth=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="355" width="900" height="10" as="geometry" />
+        </mxCell>
+
+        
+        <mxCell id="col2_lbl" value="Data &amp; Storage" style="text;html=1;align=center;fontColor=#000000;fontSize=10;fontStyle=3;" vertex="1" parent="1">
+          <mxGeometry x="40" y="370" width="270" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="postgres" value="PostgreSQL Database&#10;(14 tabel — sesuai ERD)" style="shape=mxgraph.flowchart.database;html=1;whiteSpace=wrap;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=3;fontColor=#000000;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="394" width="270" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="storage" value="File Storage&#10;(Laporan PDF, foto dokumentasi panen)" style="shape=mxgraph.flowchart.stored_data;html=1;whiteSpace=wrap;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="506" width="270" height="72" as="geometry" />
+        </mxCell>
+
+        
+        <mxCell id="col3_lbl" value="Edge Functions (Business Logic)" style="text;html=1;align=center;fontColor=#000000;fontSize=10;fontStyle=3;" vertex="1" parent="1">
+          <mxGeometry x="370" y="88" width="570" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="fn_scoring" value="fn_scoring_risiko()&#10;Rule-Based Engine: Potensi x Dampak&#10;-&gt; Klasifikasi: Best / Middle / Worst" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=11;fontStyle=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="370" y="112" width="290" height="78" as="geometry" />
+        </mxCell>
+        <mxCell id="fn_laporan" value="fn_generate_laporan()&#10;Agregasi data panen, operasional,&#10;distribusi -&gt; export PDF" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=11;fontStyle=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="370" y="308" width="290" height="78" as="geometry" />
+        </mxCell>
+
+        
+        <mxCell id="ia1" value="baca/tulis" style="rounded=0;html=1;strokeColor=#000000;endArrow=block;startArrow=block;startFill=1;endFill=1;strokeWidth=1.5;fontColor=#000000;fontSize=10;" edge="1" parent="1" source="postgrest" target="postgres"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ia2" style="rounded=0;html=1;strokeColor=#000000;endArrow=block;startArrow=block;startFill=1;endFill=1;strokeWidth=1.5;" edge="1" parent="1" source="realtime" target="postgres"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ia3" value="invoke" style="rounded=0;html=1;strokeColor=#000000;endArrow=block;endFill=1;strokeWidth=1.5;fontColor=#000000;fontSize=10;dashed=1;" edge="1" parent="1" source="postgrest" target="fn_scoring"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ia5" style="rounded=0;html=1;strokeColor=#000000;endArrow=block;endFill=1;strokeWidth=1.5;dashed=1;" edge="1" parent="1" source="postgres" target="fn_laporan">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="310" y="439" />
+              <mxPoint x="310" y="347" />
+              <mxPoint x="515" y="347" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ia6" style="rounded=0;html=1;strokeColor=#000000;endArrow=block;endFill=1;strokeWidth=1.5;" edge="1" parent="1" source="fn_laporan" target="storage">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="515" y="386" />
+              <mxPoint x="515" y="450" />
+              <mxPoint x="310" y="450" />
+              <mxPoint x="310" y="542" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        
+        
+        
+
+        <mxCell id="client_zone" value="" style="rounded=0;html=1;fillColor=none;strokeColor=#000000;strokeWidth=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="50" width="560" height="760" as="geometry" />
+        </mxCell>
+        <mxCell id="client_zone_lbl" value="KLIEN &amp; PENGGUNA" style="text;html=1;align=center;fontColor=#000000;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="54" width="560" height="20" as="geometry" />
+        </mxCell>
+
+        
+        <mxCell id="nextjs" value="Next.js Web App (PWA)&#10;Dashboard Utama" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=3;fontColor=#000000;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1045" y="88" width="280" height="65" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sdk_note" value="@supabase/supabase-js SDK&#10;(dipakai oleh semua client)" style="text;html=1;align=center;fontColor=#000000;fontSize=10;fontStyle=2;dashed=1;rounded=0;strokeColor=#000000;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="1045" y="270" width="280" height="44" as="geometry" />
+        </mxCell>
+
+        
+        <mxCell id="actor_sep" value="" style="line;strokeColor=#000000;strokeWidth=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="1045" y="338" width="280" height="10" as="geometry" />
+        </mxCell>
+        <mxCell id="actors_lbl" value="Pengguna Sistem" style="text;html=1;align=center;fontColor=#000000;fontSize=10;fontStyle=3;" vertex="1" parent="1">
+          <mxGeometry x="1045" y="350" width="280" height="18" as="geometry" />
+        </mxCell>
+
+        <mxCell id="act_petambak" value="Petambak / Operator" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1045" y="374" width="170" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="act_admin" value="Admin" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1235" y="374" width="120" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="act_owner" value="Manajemen / Owner" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1045" y="434" width="170" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="ea1" style="rounded=0;html=1;strokeColor=#000000;endArrow=block;startArrow=block;startFill=1;endFill=1;strokeWidth=1.5;" edge="1" parent="1" source="act_petambak" target="nextjs"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ea2" style="rounded=0;html=1;strokeColor=#000000;endArrow=block;startArrow=block;startFill=1;endFill=1;strokeWidth=1.5;" edge="1" parent="1" source="act_admin" target="nextjs"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ea3" style="rounded=0;html=1;strokeColor=#000000;endArrow=block;startArrow=block;startFill=1;endFill=1;strokeWidth=1.5;" edge="1" parent="1" source="act_owner" target="nextjs"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_supa_next" value="REST + Realtime + Auth + Storage" style="rounded=0;html=1;strokeColor=#000000;endArrow=block;startArrow=block;startFill=1;endFill=1;strokeWidth=2;fontColor=#000000;fontSize=10;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="nextjs" target="postgrest">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1045" y="120" />
+              <mxPoint x="960" y="120" />
+              <mxPoint x="960" y="141" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend" value="" style="rounded=0;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="1045" y="600" width="280" height="168" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_lbl" value="KETERANGAN:" style="text;html=1;align=left;fontColor=#000000;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1058" y="608" width="200" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_solid" value="" style="rounded=0;html=1;strokeColor=#000000;endArrow=block;endFill=1;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="0" as="geometry"><mxPoint x="1058" y="634" as="sourcePoint" /><mxPoint x="1108" y="634" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="leg_solid_lbl" value="Aliran data utama" style="text;html=1;align=left;fontColor=#000000;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="626" width="180" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_dash" value="" style="rounded=0;html=1;strokeColor=#000000;endArrow=block;endFill=1;strokeWidth=1.5;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="0" as="geometry"><mxPoint x="1058" y="660" as="sourcePoint" /><mxPoint x="1108" y="660" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="leg_dash_lbl" value="Komponen / aliran opsional" style="text;html=1;align=left;fontColor=#000000;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="652" width="180" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_bidir" value="" style="rounded=0;html=1;strokeColor=#000000;endArrow=block;startArrow=block;startFill=1;endFill=1;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="0" as="geometry"><mxPoint x="1058" y="686" as="sourcePoint" /><mxPoint x="1108" y="686" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="leg_bidir_lbl" value="Komunikasi dua arah" style="text;html=1;align=left;fontColor=#000000;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="678" width="180" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_rect" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1058" y="702" width="44" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_rect_lbl" value="Komponen utama" style="text;html=1;align=left;fontColor=#000000;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="704" width="180" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_drect" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="1058" y="732" width="44" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_drect_lbl" value="Fungsi / layanan opsional" style="text;html=1;align=left;fontColor=#000000;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="734" width="180" height="18" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
