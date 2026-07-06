@@ -19,9 +19,8 @@ const NAV_ITEMS = [
   { href: '/perencanaan',  label: 'Perencanaan',     Icon: IconPlanning,     roles: ['petambak', 'admin', 'owner'] },
   { href: '/operasional',  label: 'Operasional',     Icon: IconOperational,  roles: ['petambak', 'admin'] },
   { href: '/sampling',     label: 'Sampling',        Icon: IconSampling,     roles: ['petambak', 'admin'] },
-  { href: '/panen',        label: 'Panen',           Icon: IconHarvest,      roles: ['petambak', 'admin'] },
-  { href: '/distribusi',   label: 'Distribusi',      Icon: IconDistribution, roles: ['petambak', 'admin', 'owner'] },
-  { href: '/laporan',      label: 'Laporan',         Icon: IconReport,       roles: ['admin', 'owner'] },
+  { href: '/panen',        label: 'Panen & Distribusi', Icon: IconHarvest,      roles: ['petambak', 'admin'] },
+  { href: '/laporan',      label: 'Laporan',            Icon: IconReport,       roles: ['admin', 'owner'] },
   { href: '/pengguna',     label: 'Pengguna',        Icon: IconUsers,        roles: ['admin'] },
 ]
 

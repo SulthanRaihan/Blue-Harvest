@@ -24,6 +24,7 @@ export interface Kolam {
   luas_ha: number
   lokasi: string | null
   status: StatusKolam
+  created_at?: string
 }
 
 export interface Komoditas {

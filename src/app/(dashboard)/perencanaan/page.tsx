@@ -6,20 +6,16 @@ import { gsap } from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { useRencana } from '@/hooks/useRencana'
 import { useKolam } from '@/hooks/useKolam'
+import { useKomoditas, KOMODITAS_LABEL as KMD_LABEL } from '@/hooks/useKomoditas'
 import { useAuth } from '@/hooks/useAuth'
 import { Modal, Field, Input, Select, ModalActions } from '@/components/ui/Modal'
 import { StatusBadge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
-import type { NamaKomoditas, StatusRencana } from '@/types/database'
+import type { StatusRencana } from '@/types/database'
 
 gsap.registerPlugin(useGSAP)
 
-// ── Helpers ───────────────────────────────────────────────────
-const KOMODITAS_LABEL: Record<NamaKomoditas, string> = {
-  bandeng:      'Ikan Bandeng',
-  nila:         'Ikan Nila',
-  udang_vaname: 'Udang Vaname',
-}
+const KOMODITAS_LABEL = KMD_LABEL
 
 const STATUS_ORDER: StatusRencana[] = ['draft', 'approved', 'aktif', 'selesai']
 
@@ -130,6 +126,7 @@ function RencanaCard({ r }: { r: ReturnType<typeof useRencana>['rencana'][0] }) 
 export default function PerencanaanPage() {
   const { rencana, loading, error, create } = useRencana()
   const { kolam } = useKolam()
+  const { komoditas } = useKomoditas()
   const { user, role } = useAuth()
   const pageRef = useRef<HTMLDivElement>(null)
 
@@ -266,10 +263,11 @@ export default function PerencanaanPage() {
           <Field label="Komoditas" required>
             <Select value={form.id_komoditas} onChange={e => setForm(f => ({ ...f, id_komoditas: e.target.value }))}>
               <option value="">-- Pilih komoditas --</option>
-              {/* ID komoditas diisi setelah seed data; untuk sekarang gunakan nama sebagai placeholder */}
-              <option value="bandeng">Ikan Bandeng</option>
-              <option value="nila">Ikan Nila</option>
-              <option value="udang_vaname">Udang Vaname</option>
+              {komoditas.map(k => (
+                <option key={k.id_komoditas} value={k.id_komoditas}>
+                  {KOMODITAS_LABEL[k.nama] ?? k.nama}
+                </option>
+              ))}
             </Select>
           </Field>
           <div className="grid grid-cols-2 gap-3">
