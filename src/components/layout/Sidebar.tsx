@@ -33,7 +33,7 @@ const ROLE_LABEL: Record<string, string> = {
 export default function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
-  const { user, role } = useAuth()
+  const { user, role, nama } = useAuth()
   const sidebarRef = useRef<HTMLElement>(null)
   const [loggingOut, setLoggingOut] = useState(false)
 
@@ -58,7 +58,8 @@ export default function Sidebar() {
     !role || item.roles.includes(role)
   )
 
-  const userName = user?.user_metadata?.nama
+  const userName = nama
+    ?? user?.user_metadata?.nama
     ?? user?.email?.split('@')[0]
     ?? 'Pengguna'
 

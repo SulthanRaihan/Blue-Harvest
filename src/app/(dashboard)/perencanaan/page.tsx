@@ -127,7 +127,7 @@ export default function PerencanaanPage() {
   const { rencana, loading, error, create } = useRencana()
   const { kolam } = useKolam()
   const { komoditas } = useKomoditas()
-  const { user, role } = useAuth()
+  const { role } = useAuth()
   const pageRef = useRef<HTMLDivElement>(null)
 
   const [open, setOpen]       = useState(false)
@@ -136,10 +136,8 @@ export default function PerencanaanPage() {
   const emptyForm = { id_kolam: '', id_komoditas: '', modal_rp: '', jumlah_benih: '', tanggal_rencana: '' }
   const [form, setForm] = useState(emptyForm)
 
-  // Filter: petambak hanya lihat kolam miliknya
-  const kolamOptions = role === 'petambak'
-    ? kolam.filter(k => k.id_pengguna === user?.id && k.status === 'aktif')
-    : kolam.filter(k => k.status === 'aktif')
+  // Single-tenant: semua role melihat seluruh kolam yang aktif
+  const kolamOptions = kolam.filter(k => k.status === 'aktif')
 
   useGSAP(() => {
     gsap.from('.page-header', { y: -10, opacity: 0, duration: 0.4, ease: 'power2.out', clearProps: 'all' })
