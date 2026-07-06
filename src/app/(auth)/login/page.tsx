@@ -345,10 +345,12 @@ function LoginForm() {
         <button
           type="submit"
           disabled={loading || !email || !password}
-          className="form-el relative w-full py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+          className="form-el relative w-full py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 cursor-pointer"
           style={{
-            background: 'var(--color-ocean-900)',
+            background: '#0b2d4e',
             color: '#fff',
+            opacity: loading || !email || !password ? 0.5 : 1,
+            cursor: loading || !email || !password ? 'not-allowed' : 'pointer',
             boxShadow: !loading && email && password ? '0 4px 14px rgba(11,45,78,0.4)' : 'none',
           }}
         >
