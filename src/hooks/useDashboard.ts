@@ -26,7 +26,7 @@ export function useDashboard() {
             .gte('tanggal_panen', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]),
         ])
 
-        const panenKg = (panenRes.data ?? []).reduce((sum, p) => sum + (p.total_bobot_kg ?? 0), 0)
+        const panenKg = (panenRes.data ?? []).reduce((sum: number, p: any) => sum + (p.total_bobot_kg ?? 0), 0)
 
         setStats({
           kolamAktif: kolamRes.count ?? 0,

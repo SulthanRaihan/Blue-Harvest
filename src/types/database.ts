@@ -1,11 +1,13 @@
-export type UserRole = 'petambak' | 'admin' | 'owner'
-export type StatusKolam = 'aktif' | 'tidak_aktif'
-export type NamaKomoditas = 'bandeng' | 'nila' | 'udang_vaname'
-export type StatusRencana = 'draft' | 'approved' | 'aktif' | 'selesai'
-export type NamaFaktor = 'hama' | 'cuaca' | 'pasar' | 'sdm'
+export type UserRole       = 'petambak' | 'admin' | 'owner'
+export type StatusKolam    = 'aktif' | 'tidak_aktif'
+export type NamaKomoditas  = 'bandeng' | 'nila' | 'udang_vaname'
+export type StatusRencana  = 'draft' | 'approved' | 'aktif' | 'selesai'
+export type NamaFaktor     = 'hama' | 'cuaca' | 'pasar' | 'sdm'
 export type KategoriRisiko = 'best' | 'middle' | 'worst'
-export type GradePanen = 'A' | 'B' | 'C'
+export type GradePanen     = 'A' | 'B' | 'C'
 export type StatusDistribusi = 'pending' | 'selesai'
+
+// ── Row interfaces ────────────────────────────────────────────
 
 export interface Pengguna {
   id_pengguna: string
@@ -20,7 +22,7 @@ export interface Kolam {
   id_pengguna: string
   nama_kolam: string
   luas_ha: number
-  lokasi: string
+  lokasi: string | null
   status: StatusKolam
 }
 
@@ -134,23 +136,106 @@ export interface Laporan {
   created_at: string
 }
 
-// Supabase Database type map
-export interface Database {
+// ── Supabase Database type (v2 format) ─────────────────────────
+// Must use `type` (not `interface`) so TypeScript correctly resolves
+// the extends GenericSchema check inside supabase-js SupabaseClient.
+
+type Rel = { foreignKeyName: string; columns: string[]; isOneToOne?: boolean; referencedRelation: string; referencedColumns: string[] }
+
+export type Database = {
   public: {
     Tables: {
-      pengguna: { Row: Pengguna; Insert: Omit<Pengguna, 'created_at'>; Update: Partial<Pengguna> }
-      kolam: { Row: Kolam; Insert: Omit<Kolam, 'id_kolam'>; Update: Partial<Kolam> }
-      komoditas: { Row: Komoditas; Insert: Omit<Komoditas, 'id_komoditas'>; Update: Partial<Komoditas> }
-      rencana_tebar: { Row: RencanaTebar; Insert: Omit<RencanaTebar, 'id_rencana'>; Update: Partial<RencanaTebar> }
-      faktor_risiko: { Row: FaktorRisiko; Insert: Omit<FaktorRisiko, 'id_faktor'>; Update: Partial<FaktorRisiko> }
-      skoring_risiko: { Row: SkoringRisiko; Insert: Omit<SkoringRisiko, 'id_skoring' | 'created_at'>; Update: Partial<SkoringRisiko> }
-      detail_skoring: { Row: DetailSkoring; Insert: Omit<DetailSkoring, 'id_detail'>; Update: Partial<DetailSkoring> }
-      kualitas_air: { Row: KualitasAir; Insert: Omit<KualitasAir, 'id_kualitas'>; Update: Partial<KualitasAir> }
-      operasional_harian: { Row: OperasionalHarian; Insert: Omit<OperasionalHarian, 'id_operasional'>; Update: Partial<OperasionalHarian> }
-      sampling_pertumbuhan: { Row: SamplingPertumbuhan; Insert: Omit<SamplingPertumbuhan, 'id_sampling'>; Update: Partial<SamplingPertumbuhan> }
-      panen: { Row: Panen; Insert: Omit<Panen, 'id_panen'>; Update: Partial<Panen> }
-      distribusi: { Row: Distribusi; Insert: Omit<Distribusi, 'id_distribusi'>; Update: Partial<Distribusi> }
-      laporan: { Row: Laporan; Insert: Omit<Laporan, 'id_laporan' | 'created_at'>; Update: Partial<Laporan> }
+      pengguna: {
+        Row: Pengguna
+        Insert: Omit<Pengguna, 'created_at'>
+        Update: Partial<Omit<Pengguna, 'created_at'>>
+        Relationships: Rel[]
+      }
+      kolam: {
+        Row: Kolam
+        Insert: Omit<Kolam, 'id_kolam'>
+        Update: Partial<Omit<Kolam, 'id_kolam'>>
+        Relationships: Rel[]
+      }
+      komoditas: {
+        Row: Komoditas
+        Insert: Omit<Komoditas, 'id_komoditas'>
+        Update: Partial<Omit<Komoditas, 'id_komoditas'>>
+        Relationships: Rel[]
+      }
+      rencana_tebar: {
+        Row: RencanaTebar
+        Insert: Omit<RencanaTebar, 'id_rencana'>
+        Update: Partial<Omit<RencanaTebar, 'id_rencana'>>
+        Relationships: Rel[]
+      }
+      faktor_risiko: {
+        Row: FaktorRisiko
+        Insert: Omit<FaktorRisiko, 'id_faktor'>
+        Update: Partial<Omit<FaktorRisiko, 'id_faktor'>>
+        Relationships: Rel[]
+      }
+      skoring_risiko: {
+        Row: SkoringRisiko
+        Insert: Omit<SkoringRisiko, 'id_skoring' | 'created_at'>
+        Update: Partial<Omit<SkoringRisiko, 'id_skoring' | 'created_at'>>
+        Relationships: Rel[]
+      }
+      detail_skoring: {
+        Row: DetailSkoring
+        Insert: Omit<DetailSkoring, 'id_detail'>
+        Update: Partial<Omit<DetailSkoring, 'id_detail'>>
+        Relationships: Rel[]
+      }
+      kualitas_air: {
+        Row: KualitasAir
+        Insert: Omit<KualitasAir, 'id_kualitas'>
+        Update: Partial<Omit<KualitasAir, 'id_kualitas'>>
+        Relationships: Rel[]
+      }
+      operasional_harian: {
+        Row: OperasionalHarian
+        Insert: Omit<OperasionalHarian, 'id_operasional'>
+        Update: Partial<Omit<OperasionalHarian, 'id_operasional'>>
+        Relationships: Rel[]
+      }
+      sampling_pertumbuhan: {
+        Row: SamplingPertumbuhan
+        Insert: Omit<SamplingPertumbuhan, 'id_sampling'>
+        Update: Partial<Omit<SamplingPertumbuhan, 'id_sampling'>>
+        Relationships: Rel[]
+      }
+      panen: {
+        Row: Panen
+        Insert: Omit<Panen, 'id_panen'>
+        Update: Partial<Omit<Panen, 'id_panen'>>
+        Relationships: Rel[]
+      }
+      distribusi: {
+        Row: Distribusi
+        Insert: Omit<Distribusi, 'id_distribusi'>
+        Update: Partial<Omit<Distribusi, 'id_distribusi'>>
+        Relationships: Rel[]
+      }
+      laporan: {
+        Row: Laporan
+        Insert: Omit<Laporan, 'id_laporan' | 'created_at'>
+        Update: Partial<Omit<Laporan, 'id_laporan' | 'created_at'>>
+        Relationships: Rel[]
+      }
     }
+    Views: Record<string, never>
+    Functions: Record<string, never>
+    Enums: {
+      user_role: UserRole
+      status_kolam: StatusKolam
+      nama_komoditas: NamaKomoditas
+      status_rencana: StatusRencana
+      nama_faktor: NamaFaktor
+      kategori_risiko: KategoriRisiko
+      grade_panen: GradePanen
+      status_distribusi: StatusDistribusi
+    }
+    CompositeTypes: Record<string, never>
   }
 }

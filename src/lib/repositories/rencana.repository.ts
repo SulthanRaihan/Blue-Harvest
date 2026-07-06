@@ -31,7 +31,13 @@ export const rencanaRepository = {
   },
 
   async create(rencana: Omit<RencanaTebar, 'id_rencana'>): Promise<RencanaTebar> {
-    const { data, error } = await supabase.from('rencana_tebar').insert(rencana).select().single()
+    const { data, error } = await supabase.from('rencana_tebar').insert(rencana).select('*, kolam(*), komoditas(*)').single()
+    if (error) throw error
+    return data
+  },
+
+  async update(id: string, updates: Partial<Omit<RencanaTebar, 'id_rencana'>>): Promise<RencanaTebar> {
+    const { data, error } = await supabase.from('rencana_tebar').update(updates).eq('id_rencana', id).select().single()
     if (error) throw error
     return data
   },

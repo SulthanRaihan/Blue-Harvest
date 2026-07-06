@@ -33,7 +33,7 @@ export const kolamRepository = {
     return data
   },
 
-  async create(kolam: Omit<Kolam, 'id_kolam' | 'created_at'>): Promise<Kolam> {
+  async create(kolam: Omit<Kolam, 'id_kolam'>): Promise<Kolam> {
     const { data, error } = await supabase
       .from('kolam').insert(kolam).select().single()
     if (error) throw error

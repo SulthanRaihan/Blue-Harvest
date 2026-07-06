@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
 
     // Upsert ke tabel pengguna (trigger handle_new_user sudah handle ini,
     // tapi kita upsert ulang untuk pastikan nama & role tersimpan)
-    await admin.from('pengguna').upsert({
+    await (admin as any).from('pengguna').upsert({
       id_pengguna: data.user.id,
       nama,
       email,

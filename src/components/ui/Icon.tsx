@@ -1,7 +1,10 @@
+import type { CSSProperties } from 'react'
+
 interface IconProps {
   className?: string
   size?: number
   strokeWidth?: number
+  style?: CSSProperties
 }
 
 const stroke = (w = 1.75) => ({

@@ -24,7 +24,7 @@ export function useKolam() {
 
   useEffect(() => { fetch() }, [fetch])
 
-  const create = async (data: Omit<Kolam, 'id_kolam' | 'created_at'>) => {
+  const create = async (data: Omit<Kolam, 'id_kolam'>) => {
     const created = await kolamRepository.create(data)
     await fetch()
     return created
