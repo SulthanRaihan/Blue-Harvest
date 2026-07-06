@@ -2,6 +2,7 @@
 
 import { useRef, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { gsap } from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { supabase } from '@/lib/supabase'
@@ -344,11 +345,9 @@ function LoginForm() {
         <button
           type="submit"
           disabled={loading || !email || !password}
-          className="form-el relative w-full py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed overflow-hidden"
+          className="form-el relative w-full py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
           style={{
-            background: loading || !email || !password
-              ? 'var(--color-ocean-300)'
-              : 'var(--color-ocean-900)',
+            background: 'var(--color-ocean-900)',
             color: '#fff',
             boxShadow: !loading && email && password ? '0 4px 14px rgba(11,45,78,0.4)' : 'none',
           }}
@@ -369,9 +368,9 @@ function LoginForm() {
       {/* Footer */}
       <p className="form-el text-center text-xs mt-8" style={{ color: 'var(--color-text-muted)' }}>
         Belum punya akun?{' '}
-        <span className="font-medium" style={{ color: 'var(--color-text-secondary)' }}>
-          Hubungi administrator sistem.
-        </span>
+        <Link href="/register" className="font-semibold hover:underline" style={{ color: 'var(--color-accent)' }}>
+          Daftar sekarang
+        </Link>
       </p>
     </div>
   )
