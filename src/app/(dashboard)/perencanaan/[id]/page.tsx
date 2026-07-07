@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { gsap } from 'gsap'
@@ -115,13 +115,14 @@ function RiskMeter({ total, kategori }: { total: number; kategori: KategoriRisik
 
 // ── Faktor card (input) ────────────────────────────────────────
 function FaktorInputCard({
-  faktor, nilai_potensi, nilai_dampak, skor_hasil, onSet,
+  faktor, nilai_potensi, nilai_dampak, skor_hasil, onSet, alasan,
 }: {
   faktor: { id_faktor: string; nama_faktor: string; deskripsi: string }
   nilai_potensi: number
   nilai_dampak: number
   skor_hasil: number
   onSet: (field: 'nilai_potensi' | 'nilai_dampak', val: number) => void
+  alasan?: string
 }) {
   const meta = FAKTOR_META[faktor.nama_faktor as NamaFaktor] ?? { label: faktor.nama_faktor, desc: faktor.deskripsi }
 
@@ -183,6 +184,19 @@ function FaktorInputCard({
           <span>=</span>
           <span className="font-bold" style={{ color: 'var(--color-ocean-700)' }}>{skor_hasil}</span>
         </div>
+
+        {/* AI alasan hint */}
+        {alasan && (
+          <div className="flex items-start gap-2 mt-2 pt-2 text-xs rounded-lg px-3 py-2"
+            style={{ background: 'var(--color-ocean-50)', borderLeft: '3px solid var(--color-ocean-300)' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5"
+              style={{ color: 'var(--color-ocean-500)' }}>
+              <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
+            </svg>
+            <span style={{ color: 'var(--color-ocean-700)' }}>{alasan}</span>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -246,11 +260,56 @@ export default function RencanaDetailPage() {
   const canApprove = isOwner && rencana?.status === 'draft' && !!result
   const canActivate = (role === 'admin' || role === 'petambak') && rencana?.status === 'approved'
 
+  // ── AI scoring suggestion ─────────────────────────────────────
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiSaran, setAiSaran]     = useState<Record<string, string>>({}) // nama_faktor → alasan
+  const [aiError, setAiError]     = useState<string | null>(null)
+
+  async function handleAiSuggest() {
+    if (!rencana) return
+    setAiLoading(true)
+    setAiError(null)
+    try {
+      const res = await fetch('/api/ai/scoring-suggestion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          komoditas:       rencana.komoditas?.nama ?? 'bandeng',
+          luas_ha:         rencana.kolam?.luas_ha ?? 1,
+          jumlah_benih:    rencana.jumlah_benih,
+          modal_rp:        rencana.modal_rp,
+          tanggal_rencana: rencana.tanggal_rencana,
+        }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Gagal terhubung ke AI' }))
+        throw new Error(err.error ?? 'Gagal terhubung ke AI')
+      }
+      const data = await res.json()
+      // Pre-fill nilai for each faktor
+      data.saran?.forEach((s: { nama_faktor: string; nilai_potensi: number; nilai_dampak: number; alasan: string }) => {
+        const match = faktor.find(f => f.nama_faktor === s.nama_faktor)
+        if (match) {
+          setNilai(match.id_faktor, 'nilai_potensi', s.nilai_potensi)
+          setNilai(match.id_faktor, 'nilai_dampak',  s.nilai_dampak)
+        }
+      })
+      // Store alasan per faktor
+      const saran: Record<string, string> = {}
+      data.saran?.forEach((s: { nama_faktor: string; alasan: string }) => { saran[s.nama_faktor] = s.alasan })
+      setAiSaran(saran)
+    } catch (e) {
+      setAiError(e instanceof Error ? e.message : 'Terjadi kesalahan')
+    } finally {
+      setAiLoading(false)
+    }
+  }
+
   useGSAP(() => {
     if (loadRencana || loadSkoring) return
     gsap.from('.detail-section', {
       y: 16, opacity: 0, stagger: 0.1, duration: 0.45,
-      ease: 'power2.out', clearProps: 'all',
+      ease: 'power2.out', clearProps: 'opacity,transform',
     })
   }, { scope: pageRef, dependencies: [loadRencana, loadSkoring] })
 
@@ -349,9 +408,43 @@ export default function RencanaDetailPage() {
                 Belum diisi
               </span>
             </div>
-            <p className="text-xs mb-4" style={{ color: 'var(--color-text-muted)' }}>
+            <p className="text-xs mb-3" style={{ color: 'var(--color-text-muted)' }}>
               Nilai Potensi = seberapa besar kemungkinan terjadi (1–5). Nilai Dampak = seberapa besar pengaruhnya (1–5). Skor = Potensi × Dampak.
             </p>
+
+            {/* AI suggest button */}
+            <button
+              onClick={handleAiSuggest}
+              disabled={aiLoading}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold mb-4 transition-all disabled:opacity-60"
+              style={{ background: 'var(--color-ocean-50)', color: 'var(--color-ocean-700)', border: '1.5px dashed var(--color-ocean-300)' }}>
+              {aiLoading ? (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                    className="animate-spin">
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                  </svg>
+                  Menganalisis dengan AI...
+                </>
+              ) : (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2a10 10 0 1 0 10 10"/>
+                    <path d="M12 8v4l3 3"/>
+                    <circle cx="18" cy="5" r="3"/>
+                  </svg>
+                  Bantu Isi dengan AI
+                </>
+              )}
+            </button>
+            {aiError && (
+              <div className="text-xs mb-3 px-3 py-2 rounded-lg"
+                style={{ background: 'var(--color-risk-worst-bg)', color: 'var(--color-risk-worst)' }}>
+                {aiError}
+              </div>
+            )}
 
             {/* Live meter */}
             <RiskMeter total={liveTotal} kategori={liveKategori} />
@@ -372,6 +465,7 @@ export default function RencanaDetailPage() {
                   nilai_dampak={d.nilai_dampak}
                   skor_hasil={d.skor_hasil}
                   onSet={(field, val) => setNilai(d.id_faktor, field, val)}
+                  alasan={aiSaran[d.nama_faktor]}
                 />
               ))
             )}

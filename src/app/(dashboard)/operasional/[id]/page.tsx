@@ -23,10 +23,6 @@ function formatTanggal(s: string) {
   return new Date(s).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-function formatTimestamp(s: string) {
-  return new Date(s).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
-}
-
 // ── Status dot ─────────────────────────────────────────────────
 function StatusDot({ ok }: { ok: boolean }) {
   return (
@@ -222,7 +218,7 @@ function TabKualitas({ idKolam, komoditas }: {
     try {
       await add({
         id_kolam: idKolam,
-        timestamp: new Date().toISOString(),
+        tanggal: new Date().toISOString().split('T')[0],
         ph: Number(form.ph),
         do_ppm: Number(form.do_ppm),
         suhu_celsius: Number(form.suhu_celsius),
@@ -318,7 +314,7 @@ function KualitasRow({ entry, komoditas }: { entry: KualitasAir; komoditas: any 
       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
       <div className="flex items-center justify-between mb-3">
         <span className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-          {formatTimestamp(entry.timestamp)}
+          {formatTanggal(entry.tanggal)}
         </span>
         <span className="flex items-center gap-1.5 text-xs font-medium"
           style={{ color: allOk ? 'var(--color-risk-best)' : 'var(--color-risk-worst)' }}>
@@ -363,7 +359,7 @@ export default function OperasionalDetailPage() {
 
   useGSAP(() => {
     if (loading) return
-    gsap.from('.detail-section', { y: 12, opacity: 0, stagger: 0.08, duration: 0.4, ease: 'power2.out', clearProps: 'all' })
+    gsap.from('.detail-section', { y: 12, opacity: 0, stagger: 0.08, duration: 0.4, ease: 'power2.out', clearProps: 'opacity,transform' })
   }, { scope: pageRef, dependencies: [loading] })
 
   if (loading) {

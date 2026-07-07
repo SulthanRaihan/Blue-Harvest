@@ -7,6 +7,7 @@ import { gsap } from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { supabase } from '@/lib/supabase'
 import { LoginSkeleton } from '@/components/ui/Skeleton'
+import { BubbleBackground } from '@/components/ui/BubbleBackground'
 
 gsap.registerPlugin(useGSAP)
 
@@ -68,6 +69,8 @@ function BrandPanel() {
           }}
         />
       </div>
+
+      <BubbleBackground />
 
       {/* Grid overlay */}
       <div

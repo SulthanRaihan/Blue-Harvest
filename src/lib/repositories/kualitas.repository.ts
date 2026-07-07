@@ -7,7 +7,7 @@ export const kualitasRepository = {
       .from('kualitas_air')
       .select('*')
       .eq('id_kolam', idKolam)
-      .order('timestamp', { ascending: false })
+      .order('tanggal', { ascending: false })
       .limit(limit)
     if (error) throw error
     return data as KualitasAir[]

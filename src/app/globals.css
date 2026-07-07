@@ -1,8 +1,10 @@
 @import "tailwindcss";
 
 /* ── Deep Ocean Design Tokens ─────────────────────────────── */
+/* Raw color scales — perlu @theme supaya Tailwind generate utility
+   class (bg-ocean-950, text-sky-400, dst). Skala bernomor penuh
+   selalu di-keep oleh Tailwind, jadi aman ditaruh di sini. */
 @theme inline {
-  /* Brand Colors */
   --color-ocean-950: #020d1a;
   --color-ocean-900: #0b2d4e;
   --color-ocean-800: #0e3a63;
@@ -25,7 +27,25 @@
   --color-sky-400:  #38bdf8;
   --color-sky-100:  #e0f2fe;
 
-  /* Semantic Aliases */
+  /* Typography */
+  --font-sans: var(--font-geist-sans), 'Inter', system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), 'JetBrains Mono', monospace;
+
+  /* Spacing Scale (extra) */
+  --spacing-18: 4.5rem;
+  --spacing-22: 5.5rem;
+}
+
+/* ── Semantic Tokens ──────────────────────────────────────────
+   PENTING: token di bawah ini HARUS di :root biasa, BUKAN di dalam
+   @theme. Token custom satuan (bukan skala bernomor) yang cuma
+   dipakai lewat inline style={{ var(--x) }} di TSX akan di-*prune*
+   oleh Tailwind v4 dari @theme karena dianggap "tidak terpakai" —
+   Tailwind tidak bisa melihat pemakaian di dalam string JS. Ini
+   penyebab bug lama: teks/tombol jadi invisible karena var()-nya
+   resolve ke string kosong. Simpan di :root supaya selalu ada di
+   compiled CSS apapun yang terjadi ke optimasi @theme. */
+:root {
   --color-primary:          var(--color-ocean-900);
   --color-primary-hover:    var(--color-ocean-800);
   --color-accent:           var(--color-sky-500);
@@ -52,17 +72,18 @@
   --color-risk-worst:       #dc2626;
   --color-risk-worst-bg:    #fee2e2;
 
-  /* Typography */
-  --font-sans: var(--font-geist-sans), 'Inter', system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), 'JetBrains Mono', monospace;
-
-  /* Spacing Scale (extra) */
-  --spacing-18: 4.5rem;
-  --spacing-22: 5.5rem;
-
   /* Border Radius */
-  --radius-card:   0.875rem;
-  --radius-button: 0.5rem;
+  --radius-card:        0.875rem;
+  --radius-card-pond:   34px 14px 14px 14px; /* Opsi D: siluet tepi kolam */
+  --radius-button:      0.5rem;
+
+  /* Role accent colors (semantic tokens, bukan hardcode per komponen) */
+  --color-role-petambak:     #0284c7;
+  --color-role-petambak-bg:  rgba(2,132,199,0.12);
+  --color-role-admin:        #7c3aed;
+  --color-role-admin-bg:     rgba(124,58,237,0.12);
+  --color-role-owner:        #0f766e;
+  --color-role-owner-bg:     rgba(15,118,110,0.12);
 
   /* Shadows */
   --shadow-card:    0 1px 3px 0 rgb(11 45 78 / 0.08), 0 4px 16px -2px rgb(11 45 78 / 0.06);
@@ -102,9 +123,10 @@ body {
 }
 
 /* ── Utility Classes ──────────────────────────────────────── */
+/* Opsi D — siluet tepi kolam: satu sudut melengkung besar */
 .card {
   background: var(--color-surface-card);
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-card-pond);
   box-shadow: var(--shadow-card);
   border: 1px solid var(--color-border);
 }
@@ -142,4 +164,27 @@ body {
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 6px;
+}
+
+/* ── Bubble background animation ─────────────────────────── */
+@keyframes bubbleRise {
+  0%   { transform: translateY(0) scale(1);   opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 0.6; }
+  100% { transform: translateY(-110vh) scale(1.1); opacity: 0; }
+}
+
+@keyframes bubbleSway {
+  0%, 100% { margin-left: 0; }
+  50%       { margin-left: 18px; }
+}
+
+.bubble {
+  position: absolute;
+  bottom: -40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  animation: bubbleRise var(--duration, 8s) ease-in var(--delay, 0s) infinite,
+             bubbleSway calc(var(--duration, 8s) * 0.6) ease-in-out var(--delay, 0s) infinite;
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import type { StatusRencana, NamaKomoditas } from '@/types/database'
+import type { StatusRencana, NamaKomoditas, KategoriRisiko } from '@/types/database'
 
 // ── Bentuk data ringkas untuk kartu & daftar dashboard ────────
 export interface RencanaRingkas {
@@ -30,12 +30,13 @@ export interface DashboardData {
   rencanaDraft: RencanaRingkas[]      // untuk Owner (perlu approval)
   siklusAktifList: RencanaRingkas[]   // untuk Petambak (sedang berjalan)
   komoditasBreakdown: { komoditas: NamaKomoditas; jumlah: number }[]
+  risikoBreakdown: { kategori: KategoriRisiko; jumlah: number }[]
 }
 
 const EMPTY: DashboardData = {
   totalPengguna: 0, totalKolam: 0, kolamAktif: 0, siklusAktif: 0, menungguApproval: 0,
   panenBulanIniKg: 0, totalPendapatan: 0, totalModal: 0,
-  rencanaDraft: [], siklusAktifList: [], komoditasBreakdown: [],
+  rencanaDraft: [], siklusAktifList: [], komoditasBreakdown: [], risikoBreakdown: [],
 }
 
 /**
@@ -52,11 +53,12 @@ export function useDashboard() {
 
     async function fetchAll() {
       try {
-        const [penggunaRes, kolamRes, rencanaRes, panenRes] = await Promise.all([
+        const [penggunaRes, kolamRes, rencanaRes, panenRes, skoringRes] = await Promise.all([
           supabase.from('pengguna').select('id_pengguna', { count: 'exact', head: true }),
           supabase.from('kolam').select('id_kolam, status'),
           supabase.from('rencana_tebar').select('id_rencana, status, modal_rp, jumlah_benih, tanggal_rencana, kolam(nama_kolam), komoditas(nama)'),
           supabase.from('panen').select('total_bobot_kg, total_pendapatan, tanggal_panen'),
+          supabase.from('skoring_risiko').select('kategori'),
         ])
 
         if (!active) return
@@ -64,6 +66,7 @@ export function useDashboard() {
         const kolamRows = (kolamRes.data ?? []) as { id_kolam: string; status: string }[]
         const rencanaRows = (rencanaRes.data ?? []) as any[]
         const panenRows = (panenRes.data ?? []) as any[]
+        const skoringRows = (skoringRes.data ?? []) as { kategori: KategoriRisiko }[]
 
         const toRingkas = (r: any): RencanaRingkas => ({
           id_rencana: r.id_rencana,
@@ -94,6 +97,14 @@ export function useDashboard() {
           if (r.komoditas) breakdownMap.set(r.komoditas, (breakdownMap.get(r.komoditas) ?? 0) + 1)
         }
 
+        // breakdown kategori risiko dari seluruh skoring yang pernah dibuat
+        const risikoMap = new Map<KategoriRisiko, number>()
+        for (const s of skoringRows) {
+          risikoMap.set(s.kategori, (risikoMap.get(s.kategori) ?? 0) + 1)
+        }
+        const risikoBreakdown: DashboardData['risikoBreakdown'] = (['best', 'middle', 'worst'] as KategoriRisiko[])
+          .map(kategori => ({ kategori, jumlah: risikoMap.get(kategori) ?? 0 }))
+
         setData({
           totalPengguna: penggunaRes.count ?? 0,
           totalKolam: kolamRows.length,
@@ -106,6 +117,7 @@ export function useDashboard() {
           rencanaDraft: semuaRencana.filter(r => r.status === 'draft').slice(0, 5),
           siklusAktifList: aktif.slice(0, 5),
           komoditasBreakdown: [...breakdownMap.entries()].map(([komoditas, jumlah]) => ({ komoditas, jumlah })),
+          risikoBreakdown,
         })
       } catch {
         if (active) setData(EMPTY)

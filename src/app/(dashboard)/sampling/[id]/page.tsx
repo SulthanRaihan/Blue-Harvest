@@ -50,7 +50,7 @@ export default function SamplingDetailPage() {
 
   useGSAP(() => {
     if (loading) return
-    gsap.from('.detail-section', { y: 14, opacity: 0, stagger: 0.08, duration: 0.4, ease: 'power2.out', clearProps: 'all' })
+    gsap.from('.detail-section', { y: 14, opacity: 0, stagger: 0.08, duration: 0.4, ease: 'power2.out', clearProps: 'opacity,transform' })
   }, { scope: pageRef, dependencies: [loading] })
 
   const handleAdd = async () => {

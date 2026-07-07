@@ -298,8 +298,9 @@ export default function PanenPage() {
   const harvestabl = rencana.filter(r => r.status === 'aktif' || r.status === 'selesai')
 
   useGSAP(() => {
-    gsap.from('.page-header', { y: -10, opacity: 0, duration: 0.4, ease: 'power2.out', clearProps: 'all' })
-    gsap.from('.rencana-section', { y: 16, opacity: 0, stagger: 0.1, duration: 0.4, ease: 'power2.out', delay: 0.1, clearProps: 'all' })
+    if (loading) return
+    gsap.from('.page-header', { y: -10, opacity: 0, duration: 0.4, ease: 'power2.out', clearProps: 'opacity,transform' })
+    gsap.from('.rencana-section', { y: 16, opacity: 0, stagger: 0.1, duration: 0.4, ease: 'power2.out', delay: 0.1, clearProps: 'opacity,transform' })
   }, { scope: pageRef, dependencies: [loading] })
 
   return (

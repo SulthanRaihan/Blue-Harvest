@@ -38,13 +38,19 @@ export default function Sidebar() {
   const [loggingOut, setLoggingOut] = useState(false)
 
   useGSAP(() => {
+    // Cuma animasikan posisi (bukan opacity/autoAlpha) — di React Strict Mode
+    // (dev), efek ini bisa di-mount dua kali secara cepat dan tween lama
+    // ke-interrupt di tengah jalan. Kalau opacity yang dianimasikan, item
+    // bisa macet permanen di opacity rendah/visibility:hidden (nav jadi
+    // hilang). Animasi posisi saja aman: interupsi paling parah cuma bikin
+    // sedikit offset, item tetap selalu terlihat penuh.
     gsap.from('.nav-item', {
       x: -16,
-      autoAlpha: 0,
       duration: 0.4,
       stagger: 0.06,
       ease: 'power2.out',
       delay: 0.1,
+      clearProps: 'transform',
     })
   }, { scope: sidebarRef })
 

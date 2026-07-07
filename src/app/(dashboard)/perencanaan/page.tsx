@@ -140,10 +140,11 @@ export default function PerencanaanPage() {
   const kolamOptions = kolam.filter(k => k.status === 'aktif')
 
   useGSAP(() => {
-    gsap.from('.page-header', { y: -10, opacity: 0, duration: 0.4, ease: 'power2.out', clearProps: 'all' })
+    if (loading) return
+    gsap.from('.page-header', { y: -10, opacity: 0, duration: 0.4, ease: 'power2.out', clearProps: 'opacity,transform' })
     gsap.from('.rencana-card', {
       y: 20, opacity: 0, duration: 0.4, stagger: 0.07,
-      ease: 'power2.out', delay: 0.1, clearProps: 'all',
+      ease: 'power2.out', delay: 0.1, clearProps: 'opacity,transform',
     })
   }, { scope: pageRef, dependencies: [loading] })
 

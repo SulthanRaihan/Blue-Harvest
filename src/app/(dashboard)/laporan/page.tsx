@@ -33,8 +33,9 @@ export default function LaporanPage() {
   const selesai = rencana.filter(r => r.status === 'selesai')
 
   useGSAP(() => {
-    gsap.from('.page-header', { y: -10, opacity: 0, duration: 0.4, ease: 'power2.out', clearProps: 'all' })
-    gsap.from('.report-card', { y: 16, opacity: 0, stagger: 0.07, duration: 0.4, ease: 'power2.out', delay: 0.1, clearProps: 'all' })
+    if (loading) return
+    gsap.from('.page-header', { y: -10, opacity: 0, duration: 0.4, ease: 'power2.out', clearProps: 'opacity,transform' })
+    gsap.from('.report-card', { y: 16, opacity: 0, stagger: 0.07, duration: 0.4, ease: 'power2.out', delay: 0.1, clearProps: 'opacity,transform' })
   }, { scope: pageRef, dependencies: [loading] })
 
   return (

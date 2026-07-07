@@ -31,10 +31,10 @@ export const panenRepository = {
   },
 
   async create(panen: Omit<Panen, 'id_panen' | 'total_pendapatan'>): Promise<Panen> {
-    const payload = { ...panen, total_pendapatan: panen.total_bobot_kg * panen.harga_per_kg }
+    // total_pendapatan is GENERATED ALWAYS AS (FLOOR(total_bobot_kg * harga_per_kg)) — must not be inserted
     const { data, error } = await supabase
       .from('panen')
-      .insert(payload)
+      .insert(panen)
       .select()
       .single()
     if (error) throw error

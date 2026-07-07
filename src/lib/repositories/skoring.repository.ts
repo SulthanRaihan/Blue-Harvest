@@ -27,11 +27,9 @@ export const skoringRepository = {
   },
 
   async create(input: SkoringInput): Promise<SkoringResult> {
-    const details = input.faktor.map(f => ({
-      ...f,
-      skor_hasil: f.nilai_potensi * f.nilai_dampak,
-    }))
-    const totalSkor = details.reduce((sum, d) => sum + d.skor_hasil, 0)
+    const totalSkor = input.faktor.reduce(
+      (sum, f) => sum + f.nilai_potensi * f.nilai_dampak, 0,
+    )
     const kategori: KategoriRisiko = totalSkor <= 10 ? 'best' : totalSkor <= 20 ? 'middle' : 'worst'
 
     const { data: skoring, error: skoringErr } = await supabase
@@ -41,7 +39,13 @@ export const skoringRepository = {
       .single()
     if (skoringErr) throw skoringErr
 
-    const detailRows = details.map(d => ({ ...d, id_skoring: skoring.id_skoring }))
+    // skor_hasil is a GENERATED ALWAYS column — must not be included in INSERT
+    const detailRows = input.faktor.map(f => ({
+      id_skoring:    skoring.id_skoring,
+      id_faktor:     f.id_faktor,
+      nilai_potensi: f.nilai_potensi,
+      nilai_dampak:  f.nilai_dampak,
+    }))
     const { data: detailData, error: detailErr } = await supabase
       .from('detail_skoring')
       .insert(detailRows)

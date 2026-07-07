@@ -391,8 +391,8 @@ export default function PenggunaPage() {
   const pageRef = useRef<HTMLDivElement>(null)
 
   useGSAP(() => {
-    gsap.from('.page-header', { y: -10, opacity: 0, duration: 0.4, ease: 'power2.out', clearProps: 'all' })
-    gsap.from('.page-card', { y: 16, opacity: 0, duration: 0.45, ease: 'power2.out', delay: 0.1, clearProps: 'all' })
+    gsap.from('.page-header', { y: -10, opacity: 0, duration: 0.4, ease: 'power2.out', clearProps: 'opacity,transform' })
+    gsap.from('.page-card', { y: 16, opacity: 0, duration: 0.45, ease: 'power2.out', delay: 0.1, clearProps: 'opacity,transform' })
   }, { scope: pageRef })
 
   return (

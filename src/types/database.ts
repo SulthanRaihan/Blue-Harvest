@@ -78,7 +78,7 @@ export interface DetailSkoring {
 export interface KualitasAir {
   id_kualitas: string
   id_kolam: string
-  timestamp: string
+  tanggal: string
   ph: number
   do_ppm: number
   suhu_celsius: number
@@ -184,8 +184,8 @@ export type Database = {
       }
       detail_skoring: {
         Row: DetailSkoring
-        Insert: Omit<DetailSkoring, 'id_detail'>
-        Update: Partial<Omit<DetailSkoring, 'id_detail'>>
+        Insert: Omit<DetailSkoring, 'id_detail' | 'skor_hasil'>   // skor_hasil = GENERATED ALWAYS
+        Update: Partial<Omit<DetailSkoring, 'id_detail' | 'skor_hasil'>>
         Relationships: Rel[]
       }
       kualitas_air: {
@@ -208,8 +208,8 @@ export type Database = {
       }
       panen: {
         Row: Panen
-        Insert: Omit<Panen, 'id_panen'>
-        Update: Partial<Omit<Panen, 'id_panen'>>
+        Insert: Omit<Panen, 'id_panen' | 'total_pendapatan'>      // total_pendapatan = GENERATED ALWAYS
+        Update: Partial<Omit<Panen, 'id_panen' | 'total_pendapatan'>>
         Relationships: Rel[]
       }
       distribusi: {

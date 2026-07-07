@@ -7,6 +7,7 @@ import { gsap } from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { useLaporanDetail } from '@/hooks/useLaporan'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { GrowthChart } from '@/components/ui/Charts'
 import type { NamaKomoditas, GradePanen } from '@/types/database'
 
 gsap.registerPlugin(useGSAP)
@@ -32,9 +33,15 @@ function formatTanggal(s: string) {
 // ── Stat card ─────────────────────────────────────────────────
 function StatCard({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: boolean }) {
   return (
-    <div className="card p-5 text-center">
-      <div className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>{label}</div>
-      <div className="text-2xl font-black" style={{ color: accent ? 'var(--color-teal-600)' : 'var(--color-ocean-800)' }}>
+    <div className="card p-5 text-center min-w-0">
+      <div className="text-xs mb-1 truncate" style={{ color: 'var(--color-text-muted)' }}>{label}</div>
+      <div
+        className="font-black leading-tight break-words"
+        style={{
+          color: accent ? 'var(--color-teal-600)' : 'var(--color-ocean-800)',
+          fontSize: value.length > 10 ? '1.125rem' : '1.5rem',
+        }}
+      >
         {value}
       </div>
       {sub && <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>{sub}</div>}
@@ -60,7 +67,7 @@ export default function LaporanDetailPage() {
     if (loading) return
     gsap.from('.report-section', {
       y: 14, opacity: 0, stagger: 0.1, duration: 0.45,
-      ease: 'power2.out', clearProps: 'all',
+      ease: 'power2.out', clearProps: 'opacity,transform',
     })
   }, { scope: pageRef, dependencies: [loading] })
 
@@ -219,6 +226,20 @@ export default function LaporanDetailPage() {
               </div>
             </div>
           </div>
+
+          {sampling.length >= 2 && (
+            <div className="card p-4 mt-3">
+              <div className="text-xs font-semibold mb-2" style={{ color: 'var(--color-text-muted)' }}>
+                Tren Bobot Rata-rata per Minggu (gram)
+              </div>
+              <GrowthChart data={sampling} />
+              <div className="flex justify-between text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
+                {[...sampling].sort((a, b) => a.minggu_ke - b.minggu_ke).map(s => (
+                  <span key={s.id_sampling}>M{s.minggu_ke}</span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
