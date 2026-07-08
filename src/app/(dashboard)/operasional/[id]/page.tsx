@@ -9,6 +9,7 @@ import { useRencanaDetail } from '@/hooks/useRencana'
 import { useOperasional, useKualitas, checkKualitas } from '@/hooks/useOperasional'
 import { Modal, Field, Input, ModalActions } from '@/components/ui/Modal'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { WaterQualityBar } from '@/components/ui/Charts'
 import type { NamaKomoditas, OperasionalHarian, KualitasAir } from '@/types/database'
 
 gsap.registerPlugin(useGSAP)
@@ -301,12 +302,7 @@ function TabKualitas({ idKolam, komoditas }: {
 function KualitasRow({ entry, komoditas }: { entry: KualitasAir; komoditas: any }) {
   const status = checkKualitas(entry, komoditas)
   const allOk  = Object.values(status).every(s => s.ok)
-  const params = [
-    { key: 'ph',         label: 'pH',         val: entry.ph,           unit: '' },
-    { key: 'do_ppm',     label: 'DO',         val: entry.do_ppm,       unit: ' ppm' },
-    { key: 'suhu',       label: 'Suhu',       val: entry.suhu_celsius, unit: '°C' },
-    { key: 'salinitas',  label: 'Salinitas',  val: entry.salinitas_ppt,unit: ' ppt' },
-  ]
+  const hasTarget = !!komoditas
 
   return (
     <div className="px-5 py-4 transition-colors"
@@ -322,26 +318,28 @@ function KualitasRow({ entry, komoditas }: { entry: KualitasAir; komoditas: any 
           {allOk ? 'Normal' : 'Ada Anomali'}
         </span>
       </div>
-      <div className="grid grid-cols-4 gap-2">
-        {params.map(p => {
-          const s = status[p.key]
-          const ok = s ? s.ok : true
-          return (
-            <div key={p.key} className="rounded-lg p-2.5 text-center"
-              style={{
-                background: ok ? 'var(--color-ocean-50)' : 'var(--color-risk-worst-bg)',
-                border: ok ? '1px solid var(--color-ocean-100)' : '1px solid #fca5a5',
-              }}>
-              <div className="text-xs mb-0.5" style={{ color: ok ? 'var(--color-ocean-500)' : 'var(--color-risk-worst)' }}>
-                {p.label}
-              </div>
-              <div className="text-sm font-bold" style={{ color: ok ? 'var(--color-ocean-800)' : 'var(--color-risk-worst)' }}>
-                {p.val}{p.unit}
-              </div>
+      {hasTarget ? (
+        <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+          <WaterQualityBar label="pH" value={entry.ph} min={komoditas.target_ph_min} max={komoditas.target_ph_max} ok={status.ph?.ok ?? true} />
+          <WaterQualityBar label="DO" value={entry.do_ppm} unit=" ppm" min={komoditas.target_do_min} ok={status.do_ppm?.ok ?? true} />
+          <WaterQualityBar label="Suhu" value={entry.suhu_celsius} unit="°C" min={komoditas.target_suhu_min} max={komoditas.target_suhu_max} ok={status.suhu?.ok ?? true} />
+          <WaterQualityBar label="Salinitas" value={entry.salinitas_ppt} unit=" ppt" min={komoditas.target_salinitas_min} max={komoditas.target_salinitas_max} ok={status.salinitas?.ok ?? true} />
+        </div>
+      ) : (
+        <div className="grid grid-cols-4 gap-2">
+          {[
+            { label: 'pH', val: entry.ph, unit: '' },
+            { label: 'DO', val: entry.do_ppm, unit: ' ppm' },
+            { label: 'Suhu', val: entry.suhu_celsius, unit: '°C' },
+            { label: 'Salinitas', val: entry.salinitas_ppt, unit: ' ppt' },
+          ].map(p => (
+            <div key={p.label} className="rounded-lg p-2.5 text-center" style={{ background: 'var(--color-ocean-50)', border: '1px solid var(--color-ocean-100)' }}>
+              <div className="text-xs mb-0.5" style={{ color: 'var(--color-ocean-500)' }}>{p.label}</div>
+              <div className="text-sm font-bold" style={{ color: 'var(--color-ocean-800)' }}>{p.val}{p.unit}</div>
             </div>
-          )
-        })}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

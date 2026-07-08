@@ -7,7 +7,7 @@ import { gsap } from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { useLaporanDetail } from '@/hooks/useLaporan'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { GrowthChart } from '@/components/ui/Charts'
+import { GrowthChart, PondGauge } from '@/components/ui/Charts'
 import type { NamaKomoditas, GradePanen } from '@/types/database'
 
 gsap.registerPlugin(useGSAP)
@@ -204,7 +204,7 @@ export default function LaporanDetailPage() {
       {sampling.length > 0 && (
         <div className="report-section mb-5">
           <SectionTitle>Ringkasan Pertumbuhan</SectionTitle>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="card p-4 text-center">
               <div className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>Bobot Awal</div>
               <div className="text-xl font-black" style={{ color: 'var(--color-ocean-800)' }}>
@@ -225,6 +225,14 @@ export default function LaporanDetailPage() {
                 {sampling.length} minggu
               </div>
             </div>
+            {rencana.jumlah_benih > 0 && (
+              <div className="card p-4 flex items-center justify-center">
+                <PondGauge
+                  percent={(sampling[sampling.length - 1].estimasi_populasi / rencana.jumlah_benih) * 100}
+                  label="Kelangsungan Hidup"
+                />
+              </div>
+            )}
           </div>
 
           {sampling.length >= 2 && (

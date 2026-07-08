@@ -105,3 +105,104 @@ export function RiskDonut({ data, size = 88 }: { data: { kategori: KategoriRisik
     </svg>
   )
 }
+
+// ── Pond-Fill Gauge ────────────────────────────────────────────
+// Metafora tambak literal: kotak "kolam" terisi air sesuai persentase
+// (dipakai untuk tingkat kelangsungan hidup populasi). Animasi surface
+// wave saat load, sesuai arah desain di docs/UI-DESIGN-DIRECTION.md.
+export function PondGauge({ percent, label }: { percent: number; label: string }) {
+  const uid = useId()
+  const rectRef = useRef<SVGRectElement>(null)
+  const clamped = Math.max(0, Math.min(100, percent))
+  const size = 44
+  const boxTop = 4
+  const boxBottom = size - 4
+  const boxHeight = boxBottom - boxTop
+  const fillY = boxBottom - (clamped / 100) * boxHeight
+  const fillHeight = boxBottom - fillY
+
+  useGSAP(() => {
+    const el = rectRef.current
+    if (!el) return
+    gsap.fromTo(
+      el,
+      { attr: { y: boxBottom, height: 0 } },
+      { attr: { y: fillY, height: fillHeight }, duration: 1.2, ease: 'power2.out', clearProps: 'none' }
+    )
+  }, { dependencies: [clamped] })
+
+  return (
+    <div className="flex items-center gap-3">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ flexShrink: 0 }}>
+        <defs>
+          <clipPath id={`pond-clip-${uid}`}>
+            <rect x="4" y={boxTop} width={size - 8} height={boxHeight} rx="6" />
+          </clipPath>
+          <linearGradient id={`pond-grad-${uid}`} x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stopColor="var(--color-role-petambak)" />
+            <stop offset="100%" stopColor="var(--color-sky-400)" />
+          </linearGradient>
+        </defs>
+        <rect x="4" y={boxTop} width={size - 8} height={boxHeight} rx="6" fill="var(--color-ocean-50)" stroke="var(--color-ocean-100)" strokeWidth="1.5" />
+        <g clipPath={`url(#pond-clip-${uid})`}>
+          <rect ref={rectRef} x="4" y={boxBottom} width={size - 8} height="0" fill={`url(#pond-grad-${uid})`} />
+        </g>
+      </svg>
+      <div>
+        <div className="font-black leading-none" style={{ fontSize: '1.125rem', color: 'var(--color-text-primary)' }}>
+          {clamped.toFixed(0)}%
+        </div>
+        <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>{label}</div>
+      </div>
+    </div>
+  )
+}
+
+// ── Water Quality Range Bar ────────────────────────────────────
+// Gradasi aman-bahaya dengan penanda posisi nilai saat ini.
+// Kalau `max` tidak diisi, dianggap ambang minimum saja (mis. DO).
+interface RangeBarProps {
+  label: string
+  value: number
+  unit?: string
+  min: number
+  max?: number
+  ok: boolean
+}
+
+export function WaterQualityBar({ label, value, unit = '', min, max, ok }: RangeBarProps) {
+  const hasMax = max !== undefined
+  const span = hasMax ? max - min : min || 1
+  const displayMin = hasMax ? min - span * 0.5 : Math.max(0, min - span * 0.5)
+  const displayMax = hasMax ? max + span * 0.5 : min + span
+
+  const pct = (v: number) => {
+    const clamped = Math.min(displayMax, Math.max(displayMin, v))
+    return ((clamped - displayMin) / (displayMax - displayMin)) * 100
+  }
+
+  const safeStart = pct(min)
+  const safeEnd = hasMax ? pct(max) : 100
+  const valuePos = pct(value)
+  const markColor = ok ? 'var(--color-risk-best)' : 'var(--color-risk-worst)'
+
+  return (
+    <div>
+      <div className="flex items-center justify-between text-xs mb-1">
+        <span style={{ color: 'var(--color-text-secondary)', fontWeight: 600 }}>{label}</span>
+        <span style={{ color: markColor, fontWeight: 700 }}>{value}{unit}</span>
+      </div>
+      <div style={{ height: 6, borderRadius: 4, background: 'var(--color-border)', position: 'relative', overflow: 'hidden' }}>
+        <div style={{
+          position: 'absolute', top: 0, bottom: 0,
+          left: `${safeStart}%`, width: `${Math.max(0, safeEnd - safeStart)}%`,
+          background: 'var(--color-risk-best-bg)',
+        }} />
+        <div style={{
+          position: 'absolute', top: -2, width: 2, height: 10, borderRadius: 1,
+          left: `${valuePos}%`, background: markColor,
+        }} />
+      </div>
+    </div>
+  )
+}
