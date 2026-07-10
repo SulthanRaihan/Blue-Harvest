@@ -6,6 +6,8 @@ export type NamaFaktor     = 'hama' | 'cuaca' | 'pasar' | 'sdm'
 export type KategoriRisiko = 'best' | 'middle' | 'worst'
 export type GradePanen     = 'A' | 'B' | 'C'
 export type StatusDistribusi = 'pending' | 'selesai'
+export type KategoriBiaya  = 'benih' | 'pakan' | 'listrik' | 'tenaga_kerja' | 'obat_probiotik' | 'lainnya'
+export type ItemPersiapan  = 'pengeringan' | 'pengapuran' | 'perbaikan_pematang' | 'pengisian_air' | 'pemupukan' | 'cek_kualitas_air'
 
 // ── Row interfaces ────────────────────────────────────────────
 
@@ -38,6 +40,7 @@ export interface Komoditas {
   target_salinitas_min: number
   target_salinitas_max: number
   fcr_standar: number
+  harga_acuan_per_kg: number | null
 }
 
 export interface RencanaTebar {
@@ -93,6 +96,27 @@ export interface OperasionalHarian {
   jenis_pakan: string
   catatan_hama_penyakit: string | null
   tindakan: string | null
+}
+
+export interface BiayaOperasional {
+  id_biaya: string
+  id_rencana: string
+  tanggal: string
+  kategori: KategoriBiaya
+  jumlah_rp: number
+  catatan: string | null
+  created_at?: string
+}
+
+export interface PersiapanKolam {
+  id_persiapan: string
+  id_kolam: string
+  item: ItemPersiapan
+  selesai: boolean
+  tanggal_selesai: string | null
+  catatan: string | null
+  foto_url: string | null
+  created_at?: string
 }
 
 export interface SamplingPertumbuhan {

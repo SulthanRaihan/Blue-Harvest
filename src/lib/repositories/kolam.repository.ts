@@ -49,6 +49,23 @@ export const kolamRepository = {
 
   async toggleStatus(id: string, current: Kolam['status']): Promise<void> {
     const next = current === 'aktif' ? 'tidak_aktif' : 'aktif'
+
+    // Guard: jangan biarkan kolam yang masih punya siklus aktif dinonaktifkan
+    // begitu saja — tanpa ini, admin bisa nonaktifkan kolam yang sedang
+    // dipakai petambak tanpa pengecekan apapun.
+    if (next === 'tidak_aktif') {
+      const { data: siklusAktif, error: cekError } = await supabase
+        .from('rencana_tebar')
+        .select('id_rencana')
+        .eq('id_kolam', id)
+        .eq('status', 'aktif')
+        .limit(1)
+      if (cekError) throw cekError
+      if (siklusAktif && siklusAktif.length > 0) {
+        throw new Error('Kolam ini masih punya siklus aktif, tidak bisa dinonaktifkan.')
+      }
+    }
+
     const { error } = await supabase
       .from('kolam').update({ status: next }).eq('id_kolam', id)
     if (error) throw error

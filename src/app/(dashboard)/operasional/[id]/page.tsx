@@ -7,10 +7,11 @@ import { gsap } from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { useRencanaDetail } from '@/hooks/useRencana'
 import { useOperasional, useKualitas, checkKualitas } from '@/hooks/useOperasional'
-import { Modal, Field, Input, ModalActions } from '@/components/ui/Modal'
+import { useBiaya, KATEGORI_BIAYA_LABEL } from '@/hooks/useBiaya'
+import { Modal, Field, Input, Select, ModalActions } from '@/components/ui/Modal'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { WaterQualityBar } from '@/components/ui/Charts'
-import type { NamaKomoditas, OperasionalHarian, KualitasAir } from '@/types/database'
+import { WaterQualityBar, CategoryDonut, CATEGORY_DONUT_COLORS } from '@/components/ui/Charts'
+import type { NamaKomoditas, OperasionalHarian, KualitasAir, KategoriBiaya } from '@/types/database'
 
 gsap.registerPlugin(useGSAP)
 
@@ -22,6 +23,10 @@ const KOMODITAS_LABEL: Record<NamaKomoditas, string> = {
 
 function formatTanggal(s: string) {
   return new Date(s).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+function formatRupiah(n: number) {
+  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n)
 }
 
 // ── Status dot ─────────────────────────────────────────────────
@@ -147,6 +152,124 @@ function TabPakan({ idRencana }: { idRencana: string }) {
           {formErr && <p className="text-xs" style={{ color: 'var(--color-risk-worst)' }}>{formErr}</p>}
           <ModalActions onCancel={() => setOpen(false)} onConfirm={handleAdd}
             confirmLabel="Simpan Log" loading={saving} />
+        </div>
+      </Modal>
+    </>
+  )
+}
+
+// ── Tab: Biaya Operasional ──────────────────────────────────────
+function TabBiaya({ idRencana }: { idRencana: string }) {
+  const { entries, loading, error, add, remove, total, breakdown } = useBiaya(idRencana)
+  const [open, setOpen]       = useState(false)
+  const [saving, setSaving]   = useState(false)
+  const [formErr, setFormErr] = useState<string | null>(null)
+  const emptyForm = { tanggal: new Date().toISOString().split('T')[0], kategori: '' as KategoriBiaya | '', jumlah_rp: '', catatan: '' }
+  const [form, setForm] = useState(emptyForm)
+
+  const handleAdd = async () => {
+    if (!form.kategori) return setFormErr('Pilih kategori biaya')
+    if (!form.jumlah_rp || isNaN(Number(form.jumlah_rp)) || Number(form.jumlah_rp) <= 0) {
+      return setFormErr('Jumlah biaya harus angka positif')
+    }
+    setSaving(true)
+    setFormErr(null)
+    try {
+      await add({
+        id_rencana: idRencana,
+        tanggal: form.tanggal,
+        kategori: form.kategori,
+        jumlah_rp: Number(form.jumlah_rp),
+        catatan: form.catatan || null,
+      })
+      setOpen(false)
+      setForm(emptyForm)
+    } catch (e) {
+      setFormErr(e instanceof Error ? e.message : 'Gagal menyimpan biaya')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <>
+      <div className="flex items-center justify-between px-5 py-4"
+        style={{ borderBottom: '1px solid var(--color-border)' }}>
+        <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+          {loading ? '...' : `${entries.length} entri · Total ${formatRupiah(total)}`}
+        </p>
+        <button onClick={() => { setFormErr(null); setOpen(true) }}
+          className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold"
+          style={{ background: 'var(--color-ocean-900)', color: '#fff' }}>
+          <span className="text-base leading-none">+</span> Catat Biaya
+        </button>
+      </div>
+
+      {!loading && breakdown.length > 0 && (
+        <div className="flex items-center gap-4 px-5 py-4" style={{ borderBottom: '1px solid var(--color-border)' }}>
+          <CategoryDonut data={breakdown.map(b => ({ label: b.kategori, jumlah: b.jumlah }))} size={64} />
+          <div className="flex flex-col gap-1 text-xs">
+            {breakdown.map((b, i) => (
+              <div key={b.kategori} className="flex items-center gap-1.5">
+                <span style={{ width: 8, height: 8, borderRadius: 4, background: CATEGORY_DONUT_COLORS[i % CATEGORY_DONUT_COLORS.length], display: 'inline-block' }} />
+                <span style={{ color: 'var(--color-text-secondary)' }}>{KATEGORI_BIAYA_LABEL[b.kategori]}</span>
+                <span style={{ color: 'var(--color-text-muted)' }}>· {formatRupiah(b.jumlah)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {loading ? <RowSkeleton /> : error ? (
+        <div className="px-5 py-4 text-sm" style={{ color: 'var(--color-risk-worst)' }}>{error}</div>
+      ) : entries.length === 0 ? (
+        <EmptyLog label="Belum ada biaya tercatat — catat biaya di luar pakan (listrik, tenaga kerja, dll)" />
+      ) : (
+        <div className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
+          {entries.map(e => (
+            <div key={e.id_biaya} className="flex items-center justify-between px-5 py-3.5">
+              <div>
+                <div className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                  {KATEGORI_BIAYA_LABEL[e.kategori]}
+                </div>
+                <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+                  {formatTanggal(e.tanggal)}{e.catatan ? ` · ${e.catatan}` : ''}
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-bold" style={{ color: 'var(--color-ocean-800)' }}>{formatRupiah(e.jumlah_rp)}</span>
+                <button onClick={() => remove(e.id_biaya)} className="text-xs" style={{ color: 'var(--color-risk-worst)' }}>Hapus</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <Modal open={open} onClose={() => setOpen(false)} title="Catat Biaya Operasional">
+        <div className="flex flex-col gap-4">
+          <Field label="Tanggal" required>
+            <Input type="date" value={form.tanggal}
+              onChange={e => setForm(f => ({ ...f, tanggal: e.target.value }))} />
+          </Field>
+          <Field label="Kategori" required>
+            <Select value={form.kategori} onChange={e => setForm(f => ({ ...f, kategori: e.target.value as KategoriBiaya }))}>
+              <option value="">-- Pilih kategori --</option>
+              {Object.entries(KATEGORI_BIAYA_LABEL).map(([key, label]) => (
+                <option key={key} value={key}>{label}</option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="Jumlah (Rp)" required>
+            <Input type="number" placeholder="100000" value={form.jumlah_rp}
+              onChange={e => setForm(f => ({ ...f, jumlah_rp: e.target.value }))} />
+          </Field>
+          <Field label="Catatan">
+            <Input value={form.catatan}
+              onChange={e => setForm(f => ({ ...f, catatan: e.target.value }))} />
+          </Field>
+          {formErr && <p className="text-xs" style={{ color: 'var(--color-risk-worst)' }}>{formErr}</p>}
+          <ModalActions onCancel={() => setOpen(false)} onConfirm={handleAdd}
+            confirmLabel="Simpan" loading={saving} />
         </div>
       </Modal>
     </>
@@ -347,7 +470,7 @@ function KualitasRow({ entry, komoditas }: { entry: KualitasAir; komoditas: any 
 // ════════════════════════════════════════════════════════════
 // PAGE
 // ════════════════════════════════════════════════════════════
-type Tab = 'pakan' | 'kualitas'
+type Tab = 'pakan' | 'kualitas' | 'biaya'
 
 export default function OperasionalDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -421,6 +544,7 @@ export default function OperasionalDetailPage() {
           {([
             { key: 'pakan',   label: 'Pakan & Catatan' },
             { key: 'kualitas', label: 'Kualitas Air' },
+            { key: 'biaya', label: 'Biaya' },
           ] as { key: Tab; label: string }[]).map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
               className="px-5 py-3.5 text-sm font-semibold transition-all relative"
@@ -434,9 +558,9 @@ export default function OperasionalDetailPage() {
           ))}
         </div>
 
-        {tab === 'pakan'
-          ? <TabPakan idRencana={id} />
-          : <TabKualitas idKolam={idKolam} komoditas={rencana.komoditas as any} />
+        {tab === 'pakan' ? <TabPakan idRencana={id} />
+          : tab === 'kualitas' ? <TabKualitas idKolam={idKolam} komoditas={rencana.komoditas as any} />
+          : <TabBiaya idRencana={id} />
         }
       </div>
     </div>

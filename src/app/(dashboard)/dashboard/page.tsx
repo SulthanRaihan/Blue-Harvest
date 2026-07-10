@@ -14,7 +14,7 @@ import {
   IconReport, IconUsers, IconChevronRight,
 } from '@/components/ui/Icon'
 import { BubbleBackground } from '@/components/ui/BubbleBackground'
-import { RiskDonut } from '@/components/ui/Charts'
+import { RiskDonut, BarChart } from '@/components/ui/Charts'
 import type { UserRole, NamaKomoditas } from '@/types/database'
 
 gsap.registerPlugin(useGSAP)
@@ -377,16 +377,12 @@ function SystemSummary({ data, loading }: { data: DashboardData; loading: boolea
       ) : data.komoditasBreakdown.length === 0 ? (
         <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Belum ada siklus aktif.</p>
       ) : (
-        <div className="flex flex-col gap-2.5">
-          {data.komoditasBreakdown.map(k => (
-            <div key={k.komoditas} className="flex items-center justify-between">
-              <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{KOMODITAS_LABEL[k.komoditas]}</span>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: 'var(--color-ocean-50)', color: 'var(--color-ocean-700)' }}>
-                {k.jumlah} siklus
-              </span>
-            </div>
-          ))}
-        </div>
+        // Bar chart, bukan list teks — perbandingan antar kategori diskrit
+        // (jumlah siklus per komoditas) sesuai kaidah pemilihan chart MIS.
+        <BarChart
+          data={data.komoditasBreakdown.map(k => ({ label: KOMODITAS_LABEL[k.komoditas], value: k.jumlah }))}
+          unit=" siklus"
+        />
       )}
     </div>
   )

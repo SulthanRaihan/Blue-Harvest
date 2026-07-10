@@ -44,3 +44,27 @@ export function useKolam() {
 
   return { kolam, loading, error, refresh: fetch, create, update, toggleStatus }
 }
+
+export function useKolamDetail(id: string) {
+  const [kolam, setKolam] = useState<Kolam | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetch = useCallback(async () => {
+    if (!id) return
+    try {
+      setLoading(true)
+      setError(null)
+      const data = await kolamRepository.getById(id)
+      setKolam(data)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Gagal memuat detail kolam')
+    } finally {
+      setLoading(false)
+    }
+  }, [id])
+
+  useEffect(() => { fetch() }, [fetch])
+
+  return { kolam, loading, error, refresh: fetch }
+}

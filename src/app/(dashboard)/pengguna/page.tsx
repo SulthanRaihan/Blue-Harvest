@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import Link from 'next/link'
 import { gsap } from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { usePengguna } from '@/hooks/usePengguna'
@@ -223,8 +224,18 @@ function TabKolam() {
   const [editTarget, setEditTarget] = useState<string | null>(null)
   const [saving, setSaving]         = useState(false)
   const [formError, setFormError]   = useState<string | null>(null)
+  const [toggleError, setToggleError] = useState<string | null>(null)
   const emptyForm = { nama_kolam: '', luas_ha: '', lokasi: '', id_pengguna: '' }
   const [form, setForm]             = useState(emptyForm)
+
+  const handleToggle = async (id: string, status: typeof kolam[0]['status']) => {
+    setToggleError(null)
+    try {
+      await toggleStatus(id, status)
+    } catch (e) {
+      setToggleError(e instanceof Error ? e.message : 'Gagal mengubah status kolam')
+    }
+  }
 
   const openAdd = () => {
     setForm({ ...emptyForm, id_pengguna: user?.id ?? '' })
@@ -285,6 +296,12 @@ function TabKolam() {
         </button>
       </div>
 
+      {toggleError && (
+        <div className="px-5 py-3 text-sm" style={{ background: 'var(--color-risk-worst-bg)', color: 'var(--color-risk-worst)' }}>
+          {toggleError}
+        </div>
+      )}
+
       {/* List */}
       {loading ? (
         <TableSkeleton rows={3} />
@@ -318,6 +335,10 @@ function TabKolam() {
               <StatusBadge status={k.status} />
               {/* Actions */}
               <div className="flex items-center gap-1.5">
+                <Link href={`/kolam/${k.id_kolam}`}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                  style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)', textDecoration: 'none' }}
+                >Detail</Link>
                 <button onClick={() => openEdit(k)}
                   className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
                   style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}
@@ -325,7 +346,7 @@ function TabKolam() {
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >Edit</button>
                 <button
-                  onClick={() => toggleStatus(k.id_kolam, k.status)}
+                  onClick={() => handleToggle(k.id_kolam, k.status)}
                   className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
                   style={{
                     border: `1px solid ${k.status === 'aktif' ? '#fca5a5' : 'var(--color-border)'}`,

@@ -5,8 +5,10 @@ import Link from 'next/link'
 import { gsap } from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { useRencana } from '@/hooks/useRencana'
+import { usePerbandinganSiklus } from '@/hooks/useLaporan'
 import { useAuth } from '@/hooks/useAuth'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { BarChart } from '@/components/ui/Charts'
 import type { NamaKomoditas } from '@/types/database'
 
 gsap.registerPlugin(useGSAP)
@@ -21,6 +23,52 @@ function formatRupiah(n: number) {
 
 function formatTanggal(s: string) {
   return new Date(s).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+function rupiahCompact(n: number) {
+  const sign = n < 0 ? '-' : ''
+  const abs = Math.abs(n)
+  if (abs >= 1_000_000_000) return `${sign}Rp ${(abs / 1_000_000_000).toFixed(1)} M`
+  if (abs >= 1_000_000) return `${sign}Rp ${(abs / 1_000_000).toFixed(1)} jt`
+  if (abs >= 1_000) return `${sign}Rp ${(abs / 1_000).toFixed(0)} rb`
+  return `${sign}${formatRupiah(abs)}`
+}
+
+// ── Perbandingan antar siklus (Owner/Admin) ────────────────────
+// Bar chart, bukan pie/line — soalnya ini perbandingan kategori
+// diskrit (per siklus), sesuai kaidah pemilihan chart untuk MIS.
+function PerbandinganSection() {
+  const { data, loading } = usePerbandinganSiklus()
+  if (loading) return <Skeleton height={180} rounded="rounded-2xl" />
+  if (data.length < 2) return null // perbandingan butuh minimal 2 siklus
+
+  return (
+    <div className="mb-6">
+      <h2 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-secondary)' }}>
+        Perbandingan Kinerja Antar Siklus
+      </h2>
+      <div className="grid sm:grid-cols-2 gap-4">
+        <div className="card p-4">
+          <div className="text-xs font-semibold mb-3" style={{ color: 'var(--color-text-muted)' }}>Profit per Siklus</div>
+          <BarChart
+            data={data.map(d => ({
+              label: d.label,
+              value: d.profit,
+              color: d.profit >= 0 ? 'var(--color-risk-best)' : 'var(--color-risk-worst)',
+            }))}
+            formatValue={rupiahCompact}
+          />
+        </div>
+        <div className="card p-4">
+          <div className="text-xs font-semibold mb-3" style={{ color: 'var(--color-text-muted)' }}>FCR Rata-rata per Siklus</div>
+          <BarChart
+            data={data.map(d => ({ label: d.label, value: Number(d.fcrRata.toFixed(2)) }))}
+            formatValue={v => v.toFixed(2)}
+          />
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export default function LaporanPage() {
@@ -48,6 +96,8 @@ export default function LaporanPage() {
           Ringkasan kinerja siklus budidaya — produksi, pendapatan, dan FCR
         </p>
       </div>
+
+      {(role === 'admin' || role === 'owner') && <PerbandinganSection />}
 
       {loading ? (
         <div className="grid sm:grid-cols-2 gap-4">

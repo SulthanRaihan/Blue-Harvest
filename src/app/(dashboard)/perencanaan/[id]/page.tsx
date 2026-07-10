@@ -1,12 +1,13 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { gsap } from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { useRencanaDetail } from '@/hooks/useRencana'
-import { useSkoring, FAKTOR_META, KATEGORI_LABEL, NILAI_LABEL, hitungKategori } from '@/hooks/useSkoring'
+import { useSkoring, FAKTOR_META, KATEGORI_LABEL, NILAI_LABEL, hitungKategori, generateInsight } from '@/hooks/useSkoring'
+import { useEstimasiOmset } from '@/hooks/useLaporan'
 import { useAuth } from '@/hooks/useAuth'
 import { StatusBadge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -109,6 +110,26 @@ function RiskMeter({ total, kategori }: { total: number; kategori: KategoriRisik
         <span>WORST &gt;20</span>
       </div>
       <p className="text-xs mt-3 font-medium" style={{ color: cfg.color }}>{cfg.desc}</p>
+    </div>
+  )
+}
+
+// ── DSS Insight box ──────────────────────────────────────────
+// Sintesis naratif rule-based dari skor yang sudah dihitung —
+// bukan panggilan AI baru, cuma menerjemahkan angka jadi rekomendasi.
+function InsightBox({ insight }: { insight: { ringkasan: string; rekomendasi: string } }) {
+  if (!insight.rekomendasi) return null
+  return (
+    <div className="rounded-2xl p-4 mt-3" style={{ background: 'var(--color-ocean-50)', border: '1px solid var(--color-ocean-100)' }}>
+      <div className="flex items-center gap-2 mb-2">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-ocean-700)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2a7 7 0 00-4 12.7V17a2 2 0 002 2h4a2 2 0 002-2v-2.3A7 7 0 0012 2z" />
+          <path d="M9 21h6" />
+        </svg>
+        <span className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--color-ocean-700)' }}>Kesimpulan</span>
+      </div>
+      <p className="text-sm leading-relaxed mb-1.5" style={{ color: 'var(--color-text-primary)' }}>{insight.ringkasan}</p>
+      <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>{insight.rekomendasi}</p>
     </div>
   )
 }
@@ -252,13 +273,23 @@ export default function RencanaDetailPage() {
 
   const { rencana, loading: loadRencana, error: errRencana, approve, updateStatus } = useRencanaDetail(id)
   const {
-    faktor, result, values, liveDetails, liveTotal, liveKategori,
+    faktor, result, values, liveDetails, liveTotal, liveKategori, liveInsight,
     loading: loadSkoring, saving, error: errSkoring, setNilai, submit,
   } = useSkoring(id)
+  const { data: estimasiOmset } = useEstimasiOmset(id)
 
   const isOwner    = role === 'owner'
   const canApprove = isOwner && rencana?.status === 'draft' && !!result
   const canActivate = (role === 'admin' || role === 'petambak') && rencana?.status === 'approved'
+
+  const savedInsight = useMemo(() => {
+    if (!result) return null
+    const details = result.details.map((d: any) => ({
+      nama_faktor: (d.faktor_risiko?.nama_faktor ?? d.nama_faktor) as NamaFaktor,
+      skor_hasil: d.skor_hasil,
+    }))
+    return generateInsight(details, result.skoring.total_skor, result.skoring.kategori)
+  }, [result])
 
   // ── AI scoring suggestion ─────────────────────────────────────
   const [aiLoading, setAiLoading] = useState(false)
@@ -369,6 +400,27 @@ export default function RencanaDetailPage() {
         <InfoChip label="Jumlah Benih" value={`${rencana.jumlah_benih.toLocaleString('id-ID')} ekor`} />
       </div>
 
+      {/* Estimasi omset — cuma buat siklus aktif, dari biomassa sampling terakhir */}
+      {rencana.status === 'aktif' && estimasiOmset?.estimasiOmset != null && (
+        <div className="detail-section rounded-2xl p-4 mb-6" style={{ background: 'var(--color-ocean-50)', border: '1px solid var(--color-ocean-100)' }}>
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--color-ocean-700)' }}>
+              Estimasi Omset
+            </span>
+            <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--color-risk-middle-bg)', color: 'var(--color-risk-middle)' }}>
+              Perkiraan, bukan final
+            </span>
+          </div>
+          <div className="text-2xl font-black" style={{ color: 'var(--color-ocean-900)' }}>
+            {formatRupiah(estimasiOmset.estimasiOmset)}
+          </div>
+          <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
+            Estimasi biomassa {estimasiOmset.estimasiBiomassaKg.toFixed(1)} kg × harga {formatRupiah(estimasiOmset.hargaPerKg ?? 0)}/kg
+            {estimasiOmset.sumberHarga === 'acuan' ? ' (harga acuan)' : ' (harga panen terakhir untuk komoditas ini)'}
+          </p>
+        </div>
+      )}
+
       {/* ── Scoring section ── */}
       {loadSkoring ? (
         <div className="flex flex-col gap-4 mb-6">
@@ -382,6 +434,7 @@ export default function RencanaDetailPage() {
               Hasil Skoring Risiko
             </h2>
             <RiskMeter total={result.skoring.total_skor} kategori={result.skoring.kategori} />
+            {savedInsight && <InsightBox insight={savedInsight} />}
           </div>
 
           <div className="detail-section mb-6">
@@ -448,6 +501,7 @@ export default function RencanaDetailPage() {
 
             {/* Live meter */}
             <RiskMeter total={liveTotal} kategori={liveKategori} />
+            <InsightBox insight={liveInsight} />
           </div>
 
           {/* Factor input cards */}

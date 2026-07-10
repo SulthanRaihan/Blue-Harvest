@@ -6,8 +6,9 @@ import Link from 'next/link'
 import { gsap } from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { useLaporanDetail } from '@/hooks/useLaporan'
+import { useBiaya, KATEGORI_BIAYA_LABEL } from '@/hooks/useBiaya'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { GrowthChart, PondGauge } from '@/components/ui/Charts'
+import { GrowthChart, PondGauge, CategoryDonut, CATEGORY_DONUT_COLORS } from '@/components/ui/Charts'
 import type { NamaKomoditas, GradePanen } from '@/types/database'
 
 gsap.registerPlugin(useGSAP)
@@ -28,6 +29,35 @@ function formatRupiah(n: number) {
 
 function formatTanggal(s: string) {
   return new Date(s).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+// ── Insight perbandingan siklus (rule-based, bukan panggilan AI) ──
+// Bandingkan performa siklus ini dengan siklus selesai sebelumnya di
+// kolam yang sama — bagian dari lapisan MIS/DSS evaluasi antar siklus.
+function buatInsightPerbandingan(
+  fcrSekarang: number, profitSekarang: number,
+  prev: { fcrRata: number; profit: number } | null
+): string | null {
+  if (!prev) return null
+
+  const parts: string[] = []
+  const deltaFcr = fcrSekarang - prev.fcrRata
+  if (Math.abs(deltaFcr) >= 0.05) {
+    parts.push(deltaFcr < 0
+      ? `FCR membaik ${Math.abs(deltaFcr).toFixed(2)} poin dibanding siklus sebelumnya (efisiensi pakan naik)`
+      : `FCR memburuk ${deltaFcr.toFixed(2)} poin dibanding siklus sebelumnya (efisiensi pakan turun)`)
+  }
+
+  const deltaProfit = profitSekarang - prev.profit
+  if (Math.abs(deltaProfit) >= 1) {
+    const jt = (n: number) => `Rp ${(Math.abs(n) / 1_000_000).toFixed(1)} jt`
+    parts.push(deltaProfit >= 0
+      ? `profit naik ${jt(deltaProfit)} dibanding siklus sebelumnya`
+      : `profit turun ${jt(deltaProfit)} dibanding siklus sebelumnya`)
+  }
+
+  if (parts.length === 0) return 'Kinerja siklus ini setara dengan siklus sebelumnya di kolam yang sama.'
+  return parts.join(', ') + '.'
 }
 
 // ── Stat card ─────────────────────────────────────────────────
@@ -61,6 +91,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 export default function LaporanDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { data, loading, error } = useLaporanDetail(id)
+  const { breakdown: biayaBreakdown, total: biayaTotal } = useBiaya(id)
   const pageRef = useRef<HTMLDivElement>(null)
 
   useGSAP(() => {
@@ -93,7 +124,7 @@ export default function LaporanDetailPage() {
     )
   }
 
-  const { rencana, panen, sampling, operasional, totalProduksi, totalPendapatan, totalPakan, fcrRata } = data
+  const { rencana, panen, sampling, operasional, totalProduksi, totalPendapatan, totalPakan, fcrRata, siklusSebelumnya } = data
   const fcrStandar = rencana.komoditas?.fcr_standar ?? null
   const fcrOk      = fcrStandar ? fcrRata <= fcrStandar : true
   const modal      = rencana.modal_rp ?? 0
@@ -102,6 +133,7 @@ export default function LaporanDetailPage() {
   const komoditas  = rencana.komoditas?.nama ? KOMODITAS_LABEL[rencana.komoditas.nama as NamaKomoditas] : '—'
 
   const hamaEntries = operasional.filter(o => o.catatan_hama_penyakit)
+  const insightPerbandingan = buatInsightPerbandingan(fcrRata, profit, siklusSebelumnya)
 
   return (
     <div ref={pageRef} className="px-5 py-6 lg:px-8 max-w-3xl mx-auto">
@@ -164,6 +196,47 @@ export default function LaporanDetailPage() {
                     : `perlu reduksi pakan atau evaluasi jenis pakan`}
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Insight perbandingan siklus — rule-based, dari data siklus sebelumnya */}
+      {insightPerbandingan && (
+        <div className="report-section mb-5">
+          <div className="rounded-2xl p-4" style={{ background: 'var(--color-ocean-50)', border: '1px solid var(--color-ocean-100)' }}>
+            <div className="flex items-center gap-2 mb-1.5">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-ocean-700)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 3v18h18" /><path d="M7 16l4-5 4 3 4-6" />
+              </svg>
+              <span className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--color-ocean-700)' }}>
+                Dibanding Siklus Sebelumnya
+              </span>
+            </div>
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-primary)' }}>{insightPerbandingan}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Breakdown biaya operasional */}
+      {biayaBreakdown.length > 0 && (
+        <div className="report-section mb-5">
+          <SectionTitle>Rincian Biaya Operasional</SectionTitle>
+          <div className="card p-4">
+            <div className="flex items-center gap-4 mb-3">
+              <CategoryDonut data={biayaBreakdown.map(b => ({ label: b.kategori, jumlah: b.jumlah }))} size={72} />
+              <div className="flex flex-col gap-1.5 text-xs">
+                {biayaBreakdown.map((b, i) => (
+                  <div key={b.kategori} className="flex items-center gap-1.5">
+                    <span style={{ width: 8, height: 8, borderRadius: 4, background: CATEGORY_DONUT_COLORS[i % CATEGORY_DONUT_COLORS.length], display: 'inline-block' }} />
+                    <span style={{ color: 'var(--color-text-secondary)' }}>{KATEGORI_BIAYA_LABEL[b.kategori]}</span>
+                    <span style={{ color: 'var(--color-text-muted)' }}>· {formatRupiah(b.jumlah)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="pt-3 text-xs" style={{ borderTop: '1px solid var(--color-border)', color: 'var(--color-text-muted)' }}>
+              Total biaya tercatat: <b style={{ color: 'var(--color-text-primary)' }}>{formatRupiah(biayaTotal)}</b> — di luar modal awal ({formatRupiah(modal)})
             </div>
           </div>
         </div>

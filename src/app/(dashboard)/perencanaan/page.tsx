@@ -19,6 +19,26 @@ const KOMODITAS_LABEL = KMD_LABEL
 
 const STATUS_ORDER: StatusRencana[] = ['draft', 'approved', 'aktif', 'selesai']
 
+// ── TPS sanity-check: batas kepadatan wajar (ekor/ha) ──────────
+// Angka ini generous (jauh di atas praktik intensif normal) — tujuannya
+// cuma menangkap salah input (kelebihan nol, dsb), bukan membatasi
+// metode budidaya yang sah. > batas ini ditolak sebagai kemungkinan
+// besar salah input, bukan karena itu mustahil secara teknis.
+const KEPADATAN_MAX_PER_HA: Record<string, number> = {
+  bandeng: 50_000,
+  nila: 50_000,
+  udang_vaname: 1_000_000,
+}
+
+function cekKepadatan(jumlahBenih: number, luasHa: number, namaKomoditas?: string) {
+  if (!luasHa || !namaKomoditas) return { kepadatan: 0, status: 'ok' as const }
+  const kepadatan = jumlahBenih / luasHa
+  const batas = KEPADATAN_MAX_PER_HA[namaKomoditas] ?? 100_000
+  if (kepadatan > batas * 3) return { kepadatan, status: 'blokir' as const, batas }
+  if (kepadatan > batas) return { kepadatan, status: 'peringatan' as const, batas }
+  return { kepadatan, status: 'ok' as const, batas }
+}
+
 function formatRupiah(n: number) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n)
 }
@@ -148,12 +168,21 @@ export default function PerencanaanPage() {
     })
   }, { scope: pageRef, dependencies: [loading] })
 
+  const selectedKolam     = kolamOptions.find(k => k.id_kolam === form.id_kolam)
+  const selectedKomoditas = komoditas.find(k => k.id_komoditas === form.id_komoditas)
+  const kepadatanCheck = cekKepadatan(Number(form.jumlah_benih) || 0, selectedKolam?.luas_ha ?? 0, selectedKomoditas?.nama)
+
   const handleCreate = async () => {
     if (!form.id_kolam)        return setFormError('Pilih kolam')
     if (!form.id_komoditas)    return setFormError('Pilih komoditas')
     if (!form.modal_rp || isNaN(Number(form.modal_rp))) return setFormError('Modal harus angka')
     if (!form.jumlah_benih || isNaN(Number(form.jumlah_benih))) return setFormError('Jumlah benih harus angka')
     if (!form.tanggal_rencana) return setFormError('Tanggal rencana wajib diisi')
+    if (kepadatanCheck.status === 'blokir') {
+      return setFormError(
+        `Kepadatan ${Math.round(kepadatanCheck.kepadatan).toLocaleString('id-ID')} ekor/ha terlalu tinggi (wajar maks ~${kepadatanCheck.batas?.toLocaleString('id-ID')} ekor/ha). Periksa kembali jumlah benih atau luas kolam — kemungkinan salah input.`
+      )
+    }
 
     setSaving(true)
     setFormError(null)
@@ -279,6 +308,12 @@ export default function PerencanaanPage() {
                 onChange={e => setForm(f => ({ ...f, jumlah_benih: e.target.value }))} />
             </Field>
           </div>
+          {form.jumlah_benih && selectedKolam && selectedKomoditas && kepadatanCheck.status !== 'ok' && (
+            <p className="text-xs -mt-2" style={{ color: kepadatanCheck.status === 'blokir' ? 'var(--color-risk-worst)' : 'var(--color-risk-middle)' }}>
+              {kepadatanCheck.status === 'blokir' ? '✕' : '⚠'} Kepadatan ≈ {Math.round(kepadatanCheck.kepadatan).toLocaleString('id-ID')} ekor/ha
+              {kepadatanCheck.status === 'blokir' ? ' — jauh di luar rentang wajar, kemungkinan salah input.' : ' — lebih tinggi dari praktik umum, pastikan ini benar.'}
+            </p>
+          )}
           <Field label="Tanggal Rencana Tebar" required>
             <Input type="date" value={form.tanggal_rencana}
               onChange={e => setForm(f => ({ ...f, tanggal_rencana: e.target.value }))} />

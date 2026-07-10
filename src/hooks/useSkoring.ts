@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { faktorRepository } from '@/lib/repositories/faktor.repository'
 import { skoringRepository, type SkoringResult } from '@/lib/repositories/skoring.repository'
-import type { FaktorRisiko, KategoriRisiko } from '@/types/database'
+import type { FaktorRisiko, KategoriRisiko, NamaFaktor } from '@/types/database'
 
 interface FaktorValue {
   nilai_potensi: number
@@ -35,6 +35,44 @@ export const FAKTOR_META: Record<string, { label: string; desc: string }> = {
   cuaca: { label: 'Cuaca dan Iklim',     desc: 'Risiko perubahan cuaca ekstrem, musim hujan/kemarau, dan dampak iklim terhadap budidaya.' },
   pasar: { label: 'Pasar dan Harga',     desc: 'Fluktuasi harga komoditas, ketersediaan pasar, dan risiko tidak terserap pasar.' },
   sdm:   { label: 'Operasional / SDM',   desc: 'Kemampuan tenaga kerja, ketersediaan sarana operasional, dan risiko human error.' },
+}
+
+// ── DSS: insight/kesimpulan naratif ────────────────────────────
+// Rule-based (bukan panggilan AI lagi) — mensintesis skor yang SUDAH
+// dihitung jadi rekomendasi naratif. Ini komponen DSS: model + insight,
+// keputusan akhir tetap di tangan Owner/Petambak.
+export interface SkoringInsight {
+  ringkasan: string
+  faktorUtama: { label: string; skor: number } | null
+  rekomendasi: string
+}
+
+const REKOMENDASI: Record<KategoriRisiko, string> = {
+  best:   'Risiko rendah pada seluruh faktor. Rencana ini bisa dilanjutkan dengan pengawasan operasional standar.',
+  middle: 'Ada faktor risiko yang perlu mitigasi spesifik sebelum tebar benih — bukan berarti dibatalkan, tapi siapkan langkah antisipasi untuk faktor dengan skor tertinggi.',
+  worst:  'Risiko tinggi pada satu atau lebih faktor sekaligus. Disarankan meninjau ulang rencana (kurangi kepadatan tebar, tunda waktu tebar, atau siapkan mitigasi khusus) sebelum modal dikeluarkan.',
+}
+
+export function generateInsight(
+  details: { nama_faktor: NamaFaktor; skor_hasil: number }[],
+  total: number,
+  kategori: KategoriRisiko
+): SkoringInsight {
+  if (details.length === 0 || total === 0) {
+    return { ringkasan: '', faktorUtama: null, rekomendasi: '' }
+  }
+
+  const urutan = [...details].sort((a, b) => b.skor_hasil - a.skor_hasil)
+  const tertinggi = urutan[0]
+  const faktorUtama = tertinggi && tertinggi.skor_hasil > 0
+    ? { label: FAKTOR_META[tertinggi.nama_faktor]?.label ?? tertinggi.nama_faktor, skor: tertinggi.skor_hasil }
+    : null
+
+  const ringkasan = faktorUtama
+    ? `Total skor ${total} (${KATEGORI_LABEL[kategori]}) — kontributor terbesar adalah faktor ${faktorUtama.label} dengan skor ${faktorUtama.skor}.`
+    : `Total skor ${total} (${KATEGORI_LABEL[kategori]}).`
+
+  return { ringkasan, faktorUtama, rekomendasi: REKOMENDASI[kategori] }
 }
 
 export function useSkoring(idRencana: string) {
@@ -80,6 +118,10 @@ export function useSkoring(idRencana: string) {
 
   const liveTotal    = useMemo(() => liveDetails.reduce((s, d) => s + d.skor_hasil, 0), [liveDetails])
   const liveKategori = useMemo(() => hitungKategori(liveTotal), [liveTotal])
+  const liveInsight  = useMemo(
+    () => generateInsight(liveDetails.map(d => ({ nama_faktor: d.nama_faktor, skor_hasil: d.skor_hasil })), liveTotal, liveKategori),
+    [liveDetails, liveTotal, liveKategori]
+  )
 
   const submit = async () => {
     setSaving(true)
@@ -102,7 +144,7 @@ export function useSkoring(idRencana: string) {
   }
 
   return {
-    faktor, result, values, liveDetails, liveTotal, liveKategori,
+    faktor, result, values, liveDetails, liveTotal, liveKategori, liveInsight,
     loading, saving, error,
     setNilai, submit, refresh: fetch,
   }

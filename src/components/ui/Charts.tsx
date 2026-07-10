@@ -106,6 +106,50 @@ export function RiskDonut({ data, size = 88 }: { data: { kategori: KategoriRisik
   )
 }
 
+// ── Category Donut (generik) ─────────────────────────────────
+// Sama seperti RiskDonut tapi buat kategori apapun (mis. breakdown
+// biaya operasional) — bukan cuma kategori risiko. Part-to-whole
+// diskrit = donut chart, sesuai kaidah pemilihan chart MIS.
+const DONUT_PALETTE = [
+  'var(--color-role-petambak)', 'var(--color-role-admin)', 'var(--color-role-owner)',
+  'var(--color-risk-middle)', 'var(--color-ocean-400)', 'var(--color-risk-worst)',
+]
+
+export function CategoryDonut({ data, size = 88 }: { data: { label: string; jumlah: number }[]; size?: number }) {
+  const total = data.reduce((s, d) => s + d.jumlah, 0)
+  const r = 15.9
+  const circumference = 2 * Math.PI * r
+  let cumulative = 0
+
+  if (total === 0) return null
+
+  return (
+    <svg width={size} height={size} viewBox="0 0 42 42">
+      <circle cx="21" cy="21" r={r} fill="transparent" stroke="var(--color-border)" strokeWidth="6" />
+      {data.filter(d => d.jumlah > 0).map((d, i) => {
+        const frac = d.jumlah / total
+        const dash = frac * circumference
+        const offset = -cumulative * circumference
+        cumulative += frac
+        return (
+          <circle
+            key={d.label}
+            cx="21" cy="21" r={r}
+            fill="transparent"
+            stroke={DONUT_PALETTE[i % DONUT_PALETTE.length]}
+            strokeWidth="6"
+            strokeDasharray={`${dash} ${circumference}`}
+            strokeDashoffset={offset}
+            transform="rotate(-90 21 21)"
+          />
+        )
+      })}
+    </svg>
+  )
+}
+
+export const CATEGORY_DONUT_COLORS = DONUT_PALETTE
+
 // ── Pond-Fill Gauge ────────────────────────────────────────────
 // Metafora tambak literal: kotak "kolam" terisi air sesuai persentase
 // (dipakai untuk tingkat kelangsungan hidup populasi). Animasi surface
@@ -168,6 +212,58 @@ interface RangeBarProps {
   min: number
   max?: number
   ok: boolean
+}
+
+// ── Horizontal Bar Chart ───────────────────────────────────────
+// Buat perbandingan antar kategori diskrit (bukan tren waktu, bukan
+// bagian-dari-keseluruhan) — sesuai kaidah pemilihan chart MIS:
+// perbandingan kategori = bar chart, bukan pie/line.
+export interface BarDatum {
+  label: string
+  value: number
+  color?: string
+}
+
+export function BarChart({ data, unit = '', formatValue }: { data: BarDatum[]; unit?: string; formatValue?: (v: number) => string }) {
+  const barRefs = useRef<(SVGRectElement | null)[]>([])
+  const maxVal = Math.max(...data.map(d => Math.abs(d.value)), 1)
+
+  useGSAP(() => {
+    barRefs.current.forEach((el, i) => {
+      if (!el) return
+      const targetWidth = el.dataset.targetWidth
+      gsap.fromTo(el, { attr: { width: 0 } }, { attr: { width: targetWidth }, duration: 0.8, delay: i * 0.08, ease: 'power2.out' })
+    })
+  }, { dependencies: [data.map(d => d.value).join(',')] })
+
+  if (data.length === 0) return null
+
+  return (
+    <div className="flex flex-col gap-3">
+      {data.map((d, i) => {
+        const pct = (Math.abs(d.value) / maxVal) * 100
+        const color = d.color ?? 'var(--color-role-petambak)'
+        return (
+          <div key={i}>
+            <div className="flex items-center justify-between text-xs mb-1">
+              <span style={{ color: 'var(--color-text-secondary)', fontWeight: 600 }}>{d.label}</span>
+              <span style={{ color: 'var(--color-text-primary)', fontWeight: 700 }}>
+                {formatValue ? formatValue(d.value) : d.value.toLocaleString('id-ID')}{unit}
+              </span>
+            </div>
+            <svg width="100%" height="10" viewBox="0 0 100 10" preserveAspectRatio="none">
+              <rect x="0" y="0" width="100" height="10" rx="4" fill="var(--color-border)" />
+              <rect
+                ref={el => { barRefs.current[i] = el }}
+                data-target-width={pct}
+                x="0" y="0" width="0" height="10" rx="4" fill={color}
+              />
+            </svg>
+          </div>
+        )
+      })}
+    </div>
+  )
 }
 
 export function WaterQualityBar({ label, value, unit = '', min, max, ok }: RangeBarProps) {
