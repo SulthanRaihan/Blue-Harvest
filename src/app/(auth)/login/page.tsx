@@ -85,12 +85,7 @@ function BrandPanel() {
       <div className="relative z-10 flex flex-col h-full p-10 xl:p-14">
         {/* Logo */}
         <div className="brand-logo flex items-center gap-3">
-          <div
-            className="w-11 h-11 rounded-xl flex items-center justify-center font-bold text-xl"
-            style={{ background: 'var(--color-sky-500)', color: '#fff', boxShadow: '0 0 20px rgba(14,165,233,0.5)' }}
-          >
-            BH
-          </div>
+          <img src="/logo-icon.png" alt="Blue Harvest" className="w-11 h-11 object-contain" style={{ filter: 'drop-shadow(0 0 12px rgba(14,165,233,0.5))' }} />
           <div>
             <div className="font-bold text-lg leading-tight" style={{ color: '#fff' }}>Blue Harvest</div>
             <div className="text-xs" style={{ color: 'var(--color-ocean-200)' }}>Manajemen Tambak</div>
@@ -227,14 +222,8 @@ function LoginForm() {
       style={{ background: '#fff' }}
     >
       {/* Mobile logo */}
-      <div className="form-el flex items-center gap-2.5 mb-10 lg:hidden">
-        <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm"
-          style={{ background: 'var(--color-ocean-900)', color: '#fff' }}
-        >
-          BH
-        </div>
-        <span className="font-bold text-base" style={{ color: 'var(--color-ocean-900)' }}>Blue Harvest</span>
+      <div className="form-el flex items-center mb-10 lg:hidden">
+        <img src="/logo.png" alt="Blue Harvest" className="h-8 object-contain" />
       </div>
 
       {/* Header */}

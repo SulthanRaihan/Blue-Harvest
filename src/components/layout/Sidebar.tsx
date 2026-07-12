@@ -81,16 +81,11 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="px-5 py-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <Link href="/dashboard" className="flex items-center gap-3 group">
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 transition-transform group-hover:scale-105"
-            style={{
-              background: 'linear-gradient(135deg, var(--color-sky-500), var(--color-teal-600))',
-              boxShadow: '0 0 16px rgba(14,165,233,0.35)',
-              color: '#fff',
-            }}
-          >
-            BH
-          </div>
+          <img
+            src="/logo-icon.png"
+            alt="Blue Harvest"
+            className="w-9 h-9 object-contain shrink-0 transition-transform group-hover:scale-105"
+          />
           <div>
             <div className="font-bold text-sm leading-tight" style={{ color: '#fff' }}>Blue Harvest</div>
             <div className="text-xs" style={{ color: 'var(--color-ocean-300)' }}>Manajemen Tambak</div>

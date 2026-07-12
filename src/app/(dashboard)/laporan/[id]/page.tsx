@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { gsap } from 'gsap'
@@ -93,6 +93,30 @@ export default function LaporanDetailPage() {
   const { data, loading, error } = useLaporanDetail(id)
   const { breakdown: biayaBreakdown, total: biayaTotal } = useBiaya(id)
   const pageRef = useRef<HTMLDivElement>(null)
+  const [exporting, setExporting] = useState(false)
+
+  const handleExportPdf = async () => {
+    if (!data) return
+    setExporting(true)
+    try {
+      const [{ pdf }, { LaporanPdfDocument }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('@/lib/pdf/LaporanPdf'),
+      ])
+      const insight = buatInsightPerbandingan(data.fcrRata, data.totalPendapatan - (data.rencana.modal_rp ?? 0), data.siklusSebelumnya)
+      const blob = await pdf(
+        <LaporanPdfDocument data={data} biayaBreakdown={biayaBreakdown} biayaTotal={biayaTotal} insightPerbandingan={insight} />
+      ).toBlob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `Laporan-${(data.rencana.kolam?.nama_kolam ?? 'siklus').replace(/\s+/g, '-')}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } finally {
+      setExporting(false)
+    }
+  }
 
   useGSAP(() => {
     if (loading) return
@@ -159,10 +183,23 @@ export default function LaporanDetailPage() {
               {komoditas} · Siklus mulai {formatTanggal(rencana.tanggal_rencana)}
             </p>
           </div>
-          <span className="text-xs px-3 py-1.5 rounded-full font-semibold"
-            style={{ background: '#dcfce7', color: '#166534' }}>
-            Selesai
-          </span>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-xs px-3 py-1.5 rounded-full font-semibold"
+              style={{ background: '#dcfce7', color: '#166534' }}>
+              Selesai
+            </span>
+            <button
+              onClick={handleExportPdf}
+              disabled={exporting}
+              className="text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-opacity disabled:opacity-50"
+              style={{ background: 'var(--color-ocean-900)', color: '#fff' }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              {exporting ? 'Membuat PDF...' : 'Export PDF'}
+            </button>
+          </div>
         </div>
       </div>
 

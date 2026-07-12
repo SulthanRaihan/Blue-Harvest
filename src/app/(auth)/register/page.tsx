@@ -125,17 +125,8 @@ export default function RegisterPage() {
       <div ref={formRef} className="w-full max-w-md">
 
         {/* Logo */}
-        <div className="form-el flex items-center gap-2.5 mb-8">
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-base"
-            style={{ background: 'var(--color-ocean-900)', color: '#fff' }}
-          >
-            BH
-          </div>
-          <div>
-            <div className="font-bold text-sm leading-tight" style={{ color: 'var(--color-ocean-900)' }}>Blue Harvest</div>
-            <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Manajemen Tambak</div>
-          </div>
+        <div className="form-el flex items-center mb-8">
+          <img src="/logo.png" alt="Blue Harvest" className="h-9 object-contain" />
         </div>
 
         {/* Card */}

@@ -9,6 +9,10 @@ export const metadata: Metadata = {
   title: { default: 'Blue Harvest', template: '%s — Blue Harvest' },
   description: 'Sistem Informasi Manajemen Tambak — Bandeng · Nila · Udang Vaname',
   manifest: '/manifest.json',
+  icons: {
+    icon: [{ url: '/icon-192.png', sizes: '192x192', type: 'image/png' }],
+    apple: [{ url: '/icon-192.png', sizes: '192x192', type: 'image/png' }],
+  },
   appleWebApp: { capable: true, statusBarStyle: 'default', title: 'Blue Harvest' },
 }
 
