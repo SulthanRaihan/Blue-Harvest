@@ -8,6 +8,7 @@ import { usePanenByRencana, useDistribusi } from '@/hooks/usePanen'
 import { Modal, Field, Input, Select, ModalActions } from '@/components/ui/Modal'
 import { StatusBadge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { uploadFoto } from '@/lib/storage'
 import type { NamaKomoditas, GradePanen, Panen } from '@/types/database'
 
 gsap.registerPlugin(useGSAP)
@@ -142,27 +143,50 @@ function DistribusiPanel({ idPanen, totalBobot }: { idPanen: string; totalBobot:
 }
 
 // ── Panen card ────────────────────────────────────────────────
-function PanenCard({ panen, rencanaId }: { panen: Panen; rencanaId: string }) {
+function PanenCard({ panen, onUpload, uploading }: { panen: Panen; onUpload: (file: File) => void; uploading: boolean }) {
   const [showDist, setShowDist] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
   const g = GRADE_COLOR[panen.grade]
   return (
     <div className="card p-5">
       <div className="flex items-start justify-between gap-3 mb-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-              {formatTanggal(panen.tanggal_panen)}
-            </span>
-            <span className="text-xs px-2 py-0.5 rounded-full font-bold"
-              style={{ background: g.bg, color: g.color }}>
-              Grade {panen.grade}
-            </span>
-          </div>
-          <div className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
-            {panen.total_bobot_kg} kg · {formatRupiah(panen.harga_per_kg)}/kg
+        <div className="flex items-start gap-3">
+          {panen.foto_url && (
+            <a href={panen.foto_url} target="_blank" rel="noreferrer" className="block shrink-0">
+              <img src={panen.foto_url} alt="Dokumentasi panen" className="rounded-xl object-cover" style={{ width: 52, height: 52 }} />
+            </a>
+          )}
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                {formatTanggal(panen.tanggal_panen)}
+              </span>
+              <span className="text-xs px-2 py-0.5 rounded-full font-bold"
+                style={{ background: g.bg, color: g.color }}>
+                Grade {panen.grade}
+              </span>
+            </div>
+            <div className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
+              {panen.total_bobot_kg} kg · {formatRupiah(panen.harga_per_kg)}/kg
+            </div>
+            <button
+              onClick={() => inputRef.current?.click()}
+              disabled={uploading}
+              className="text-xs font-medium px-2 py-1 rounded-lg mt-1.5 transition-colors disabled:opacity-50"
+              style={{ background: 'var(--color-ocean-50)', color: 'var(--color-ocean-700)' }}
+            >
+              {uploading ? 'Mengunggah...' : panen.foto_url ? 'Ganti Foto' : '+ Foto Dokumentasi'}
+            </button>
+            <input
+              ref={inputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={e => { const f = e.target.files?.[0]; if (f) onUpload(f) }}
+            />
           </div>
         </div>
-        <div className="text-right">
+        <div className="text-right shrink-0">
           <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Total Pendapatan</div>
           <div className="text-lg font-black" style={{ color: 'var(--color-ocean-800)' }}>
             {formatRupiah(panen.total_pendapatan)}
@@ -181,10 +205,23 @@ function PanenCard({ panen, rencanaId }: { panen: Panen; rencanaId: string }) {
 
 // ── Rencana selector + panen form ────────────────────────────
 function RencanaSection({ rencana }: { rencana: ReturnType<typeof useRencana>['rencana'][0] }) {
-  const { panen, loading, create } = usePanenByRencana(rencana.id_rencana)
+  const { panen, loading, create, setFoto } = usePanenByRencana(rencana.id_rencana)
   const [open, setOpen]   = useState(false)
   const [saving, setSaving] = useState(false)
   const [formErr, setFormErr] = useState<string | null>(null)
+  const [uploadingId, setUploadingId] = useState<string | null>(null)
+
+  const handleUpload = async (idPanen: string, file: File) => {
+    setUploadingId(idPanen)
+    try {
+      const url = await uploadFoto(`panen/${idPanen}`, file)
+      await setFoto(idPanen, url)
+    } catch (e) {
+      setFormErr(e instanceof Error ? e.message : 'Gagal mengunggah foto')
+    } finally {
+      setUploadingId(null)
+    }
+  }
   const emptyForm = {
     tanggal_panen: new Date().toISOString().split('T')[0],
     total_bobot_kg: '', grade: 'A' as GradePanen, harga_per_kg: '',
@@ -242,7 +279,14 @@ function RencanaSection({ rencana }: { rencana: ReturnType<typeof useRencana>['r
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          {panen.map(p => <PanenCard key={p.id_panen} panen={p} rencanaId={rencana.id_rencana} />)}
+          {panen.map(p => (
+            <PanenCard
+              key={p.id_panen}
+              panen={p}
+              uploading={uploadingId === p.id_panen}
+              onUpload={file => handleUpload(p.id_panen, file)}
+            />
+          ))}
         </div>
       )}
 

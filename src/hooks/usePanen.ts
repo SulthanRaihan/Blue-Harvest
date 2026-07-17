@@ -24,7 +24,7 @@ export function usePanen() {
 
   useEffect(() => { fetch() }, [fetch])
 
-  const create = async (data: Omit<Panen, 'id_panen' | 'total_pendapatan'>) => {
+  const create = async (data: Omit<Panen, 'id_panen' | 'total_pendapatan' | 'foto_url'>) => {
     const created = await panenRepository.create(data)
     await fetch()
     return created
@@ -52,13 +52,18 @@ export function usePanenByRencana(idRencana: string) {
 
   useEffect(() => { fetch() }, [fetch])
 
-  const create = async (data: Omit<Panen, 'id_panen' | 'total_pendapatan'>) => {
+  const create = async (data: Omit<Panen, 'id_panen' | 'total_pendapatan' | 'foto_url'>) => {
     const created = await panenRepository.create(data)
     setPanen(prev => [created, ...prev])
     return created
   }
 
-  return { panen, loading, error, refresh: fetch, create }
+  const setFoto = async (id: string, fotoUrl: string) => {
+    await panenRepository.updateFoto(id, fotoUrl)
+    setPanen(prev => prev.map(p => p.id_panen === id ? { ...p, foto_url: fotoUrl } : p))
+  }
+
+  return { panen, loading, error, refresh: fetch, create, setFoto }
 }
 
 export function useDistribusi(idPanen: string) {

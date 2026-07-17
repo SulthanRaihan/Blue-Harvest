@@ -30,15 +30,23 @@ export const panenRepository = {
     return data as Panen[]
   },
 
-  async create(panen: Omit<Panen, 'id_panen' | 'total_pendapatan'>): Promise<Panen> {
+  async create(panen: Omit<Panen, 'id_panen' | 'total_pendapatan' | 'foto_url'>): Promise<Panen> {
     // total_pendapatan is GENERATED ALWAYS AS (FLOOR(total_bobot_kg * harga_per_kg)) — must not be inserted
     const { data, error } = await supabase
       .from('panen')
-      .insert(panen)
+      .insert({ ...panen, foto_url: null })
       .select()
       .single()
     if (error) throw error
     return data as Panen
+  },
+
+  async updateFoto(id: string, fotoUrl: string): Promise<void> {
+    const { error } = await supabase
+      .from('panen')
+      .update({ foto_url: fotoUrl })
+      .eq('id_panen', id)
+    if (error) throw error
   },
 }
 

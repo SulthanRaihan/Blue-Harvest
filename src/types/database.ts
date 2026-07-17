@@ -137,6 +137,7 @@ export interface Panen {
   grade: GradePanen
   harga_per_kg: number
   total_pendapatan: number
+  foto_url: string | null
 }
 
 export interface Distribusi {

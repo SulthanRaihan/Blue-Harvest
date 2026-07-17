@@ -9,19 +9,23 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import {
   IconDashboard, IconPlanning, IconOperational, IconSampling,
-  IconHarvest, IconDistribution, IconReport, IconUsers, IconLogOut,
+  IconHarvest, IconDistribution, IconReport, IconUsers, IconLogOut, IconFish,
 } from '@/components/ui/Icon'
 
 gsap.registerPlugin(useGSAP)
 
+// Petambak = operasional harian (TPS). Admin = data master + verifikasi
+// (kolam/komoditas/pengguna), tidak ikut input operasional harian supaya
+// perannya jelas beda dari Petambak. Owner = approval + laporan (MIS).
 const NAV_ITEMS = [
   { href: '/dashboard',    label: 'Dashboard',       Icon: IconDashboard,    roles: ['petambak', 'admin', 'owner'] },
   { href: '/perencanaan',  label: 'Perencanaan',     Icon: IconPlanning,     roles: ['petambak', 'admin', 'owner'] },
-  { href: '/operasional',  label: 'Operasional',     Icon: IconOperational,  roles: ['petambak', 'admin'] },
-  { href: '/sampling',     label: 'Sampling',        Icon: IconSampling,     roles: ['petambak', 'admin'] },
-  { href: '/panen',        label: 'Panen & Distribusi', Icon: IconHarvest,      roles: ['petambak', 'admin'] },
-  { href: '/laporan',      label: 'Laporan',            Icon: IconReport,       roles: ['admin', 'owner'] },
+  { href: '/operasional',  label: 'Operasional',     Icon: IconOperational,  roles: ['petambak'] },
+  { href: '/sampling',     label: 'Sampling',        Icon: IconSampling,     roles: ['petambak'] },
+  { href: '/panen',        label: 'Panen & Distribusi', Icon: IconHarvest,      roles: ['petambak'] },
+  { href: '/komoditas',    label: 'Komoditas',       Icon: IconFish,         roles: ['admin'] },
   { href: '/pengguna',     label: 'Pengguna',        Icon: IconUsers,        roles: ['admin'] },
+  { href: '/laporan',      label: 'Laporan',            Icon: IconReport,       roles: ['admin', 'owner'] },
 ]
 
 const ROLE_LABEL: Record<string, string> = {

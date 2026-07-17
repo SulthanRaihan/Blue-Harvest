@@ -20,4 +20,15 @@ export const komoditasRepository = {
     if (error) return null
     return data as Komoditas
   },
+
+  async update(id: string, updates: Partial<Omit<Komoditas, 'id_komoditas' | 'nama'>>): Promise<Komoditas> {
+    const { data, error } = await supabase
+      .from('komoditas')
+      .update(updates)
+      .eq('id_komoditas', id)
+      .select()
+      .single()
+    if (error) throw error
+    return data as Komoditas
+  },
 }

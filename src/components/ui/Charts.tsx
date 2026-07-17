@@ -302,3 +302,97 @@ export function WaterQualityBar({ label, value, unit = '', min, max, ok }: Range
     </div>
   )
 }
+
+// ── Dual Line Chart ────────────────────────────────────────────
+// Tren 2 seri satuan sama (Rupiah) sepanjang waktu — genuine
+// time-series job, jadi line/area, BUKAN bar (kaidah: tren waktu =
+// line, bukan perbandingan kategori diskrit). Satu sumbu Y saja,
+// tidak ada dual-axis. Legend selalu tampil untuk 2 seri.
+export interface DualLinePoint {
+  label: string
+  a: number
+  b: number
+}
+
+export function DualLineChart({
+  data, labelA, labelB, colorA = 'var(--color-role-owner)', colorB = 'var(--color-risk-middle)', formatValue,
+}: {
+  data: DualLinePoint[]
+  labelA: string
+  labelB: string
+  colorA?: string
+  colorB?: string
+  formatValue?: (v: number) => string
+}) {
+  const pathARef = useRef<SVGPathElement>(null)
+  const pathBRef = useRef<SVGPathElement>(null)
+
+  useGSAP(() => {
+    for (const ref of [pathARef, pathBRef]) {
+      const el = ref.current
+      if (!el) continue
+      const len = el.getTotalLength()
+      gsap.fromTo(el, { strokeDasharray: len, strokeDashoffset: len }, { strokeDashoffset: 0, duration: 1, ease: 'power2.out', clearProps: 'none' })
+    }
+  }, { dependencies: [data.length] })
+
+  if (data.length < 2) return null
+
+  const width = 480, height = 160, padX = 12, padY = 14
+  const allVals = data.flatMap(d => [d.a, d.b])
+  const maxVal = Math.max(...allVals, 1)
+  const stepX = (width - padX * 2) / (data.length - 1)
+
+  const toPoints = (key: 'a' | 'b') => data.map((d, i) => ({
+    x: padX + i * stepX,
+    y: height - padY - (d[key] / maxVal) * (height - padY * 2),
+  }))
+  const toPath = (pts: { x: number; y: number }[]) => pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
+
+  const pointsA = toPoints('a')
+  const pointsB = toPoints('b')
+  const fmt = formatValue ?? ((v: number) => v.toLocaleString('id-ID'))
+
+  return (
+    <div>
+      <div className="flex items-center gap-4 mb-2">
+        <span className="flex items-center gap-1.5 text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+          <span style={{ width: 8, height: 8, borderRadius: 4, background: colorA, display: 'inline-block' }} />{labelA}
+        </span>
+        <span className="flex items-center gap-1.5 text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+          <span style={{ width: 8, height: 8, borderRadius: 4, background: colorB, display: 'inline-block' }} />{labelB}
+        </span>
+      </div>
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full" style={{ height, display: 'block' }}>
+        <line x1={padX} y1={height - padY} x2={width - padX} y2={height - padY} stroke="var(--color-border)" strokeWidth="1" />
+        <path ref={pathBRef} d={toPath(pointsB)} fill="none" stroke={colorB} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path ref={pathARef} d={toPath(pointsA)} fill="none" stroke={colorA} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        {pointsA.map((p, i) => <circle key={`a${i}`} cx={p.x} cy={p.y} r="3" fill={colorA} stroke="#fff" strokeWidth="1.2" />)}
+        {pointsB.map((p, i) => <circle key={`b${i}`} cx={p.x} cy={p.y} r="3" fill={colorB} stroke="#fff" strokeWidth="1.2" />)}
+      </svg>
+      <div className="flex justify-between text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
+        {data.map((d, i) => <span key={i}>{d.label}</span>)}
+      </div>
+      <div className="sr-only">
+        {data.map(d => `${d.label}: ${labelA} ${fmt(d.a)}, ${labelB} ${fmt(d.b)}`).join('. ')}
+      </div>
+    </div>
+  )
+}
+
+// ── Delta Badge ────────────────────────────────────────────────
+// Indikator arah perubahan (naik/turun %) dibanding periode
+// sebelumnya — angka tunggal tanpa pembanding tidak actionable buat
+// keputusan Owner, jadi tiap KPI tren perlu ini.
+export function DeltaBadge({ pct, invert = false }: { pct: number | null; invert?: boolean }) {
+  if (pct === null || Number.isNaN(pct)) return null
+  const isUp = pct >= 0
+  const good = invert ? !isUp : isUp
+  const color = good ? 'var(--color-risk-best)' : 'var(--color-risk-worst)'
+  const bg = good ? 'var(--color-risk-best-bg)' : 'var(--color-risk-worst-bg)'
+  return (
+    <span className="inline-flex items-center gap-0.5 text-xs font-bold px-1.5 py-0.5 rounded-full" style={{ color, background: bg }}>
+      {isUp ? '▲' : '▼'} {Math.abs(pct).toFixed(0)}%
+    </span>
+  )
+}

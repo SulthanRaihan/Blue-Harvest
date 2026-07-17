@@ -6,6 +6,9 @@ import { gsap } from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { useAuth } from '@/hooks/useAuth'
 import { useDashboard, type DashboardData, type RencanaRingkas } from '@/hooks/useDashboard'
+import { useRecentActivity } from '@/hooks/useRecentActivity'
+import { useTrenBulanan, useRoiPerKategori, useDashboardInsight, type DashboardInsightPayload } from '@/hooks/useOwnerInsight'
+import type { ActivityType } from '@/lib/repositories/activity.repository'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { StatusBadge } from '@/components/ui/Badge'
 import {
@@ -14,7 +17,7 @@ import {
   IconReport, IconUsers, IconChevronRight,
 } from '@/components/ui/Icon'
 import { BubbleBackground } from '@/components/ui/BubbleBackground'
-import { RiskDonut, BarChart } from '@/components/ui/Charts'
+import { RiskDonut, BarChart, DualLineChart, DeltaBadge } from '@/components/ui/Charts'
 import type { UserRole, NamaKomoditas } from '@/types/database'
 
 gsap.registerPlugin(useGSAP)
@@ -64,8 +67,9 @@ interface StatProps {
   loading: boolean
   format?: (v: number) => string
   href?: string
+  delta?: React.ReactNode
 }
-function StatCard({ label, value, unit, icon, color, bg, loading, format, href }: StatProps) {
+function StatCard({ label, value, unit, icon, color, bg, loading, format, href, delta }: StatProps) {
   const numRef = useRef<HTMLSpanElement>(null)
   useGSAP(() => {
     if (loading || !numRef.current) return
@@ -89,8 +93,11 @@ function StatCard({ label, value, unit, icon, color, bg, loading, format, href }
         <div className="flex flex-col gap-1.5"><Skeleton height={28} width={56} /><Skeleton height={11} width={90} /></div>
       ) : (
         <div>
-          <div className="text-2xl font-bold tracking-tight leading-none mb-1" style={{ color: 'var(--color-text-primary)' }}>
-            <span ref={numRef}>0</span>
+          <div className="flex items-center gap-2 mb-1">
+            <div className="text-2xl font-bold tracking-tight leading-none" style={{ color: 'var(--color-text-primary)' }}>
+              <span ref={numRef}>0</span>
+            </div>
+            {delta}
           </div>
           <div className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>{label}</div>
         </div>
@@ -292,6 +299,7 @@ function AdminDashboard({ nama, data, loading }: { nama: string; data: Dashboard
         </div>
 
         <div className="flex flex-col gap-4">
+          <RecentActivity />
           <SystemSummary data={data} loading={loading} />
         </div>
       </div>
@@ -306,6 +314,20 @@ function OwnerDashboard({ nama, data, loading }: { nama: string; data: Dashboard
   const profit = data.totalPendapatan - data.totalModal
   const roi = data.totalModal > 0 ? (profit / data.totalModal) * 100 : 0
 
+  const { tren, loading: loadingTren, deltaPendapatanPct } = useTrenBulanan(6)
+  const { data: roiPerKategori, loading: loadingRoi } = useRoiPerKategori()
+
+  const insightPayload: DashboardInsightPayload | null = (loading || loadingTren || loadingRoi) ? null : {
+    deltaPendapatanPct,
+    totalPendapatan: data.totalPendapatan,
+    totalModal: data.totalModal,
+    menungguApproval: data.menungguApproval,
+    siklusAktif: data.siklusAktif,
+    roiPerKategori,
+    komoditasBreakdown: data.komoditasBreakdown.map(k => ({ komoditas: k.komoditas, jumlah: k.jumlah })),
+  }
+  const { insight, loading: loadingInsight, error: insightError } = useDashboardInsight(insightPayload)
+
   return (
     <>
       <Hero nama={nama} role="owner"
@@ -317,12 +339,27 @@ function OwnerDashboard({ nama, data, loading }: { nama: string; data: Dashboard
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-6">
         <StatCard label="Menunggu approval" value={data.menungguApproval} unit="rencana" icon={<IconApproval size={17} />} color="#b45309" bg="#fef3c7" loading={loading} href="/perencanaan" />
         <StatCard label="Siklus berjalan"   value={data.siklusAktif}      unit="siklus"  icon={<IconCycle size={17} />}    color="#0f766e" bg="#ccfbf1" loading={loading} href="/operasional" />
-        <StatCard label="Total pendapatan"  value={data.totalPendapatan}  unit="Rp"      icon={<IconScale size={17} />}    color="#15803d" bg="#dcfce7" loading={loading} format={rupiahCompact} />
+        <StatCard label="Total pendapatan"  value={data.totalPendapatan}  unit="Rp"      icon={<IconScale size={17} />}    color="#15803d" bg="#dcfce7" loading={loading || loadingTren} format={rupiahCompact}
+          delta={<DeltaBadge pct={deltaPendapatanPct} />} />
         <StatCard label="ROI kumulatif"     value={Math.round(roi)}       unit="%"       icon={<IconReport size={17} />}   color={roi >= 0 ? '#15803d' : '#b91c1c'} bg={roi >= 0 ? '#dcfce7' : '#fee2e2'} loading={loading} format={v => `${v}%`} />
       </div>
 
       <div className="grid lg:grid-cols-[1fr_300px] gap-5">
         <div>
+          <SectionTitle>Tren Pendapatan vs Biaya (6 Bulan Terakhir)</SectionTitle>
+          <div className="card p-4 mb-6">
+            {loadingTren ? (
+              <Skeleton height={160} />
+            ) : (
+              <DualLineChart
+                data={tren.map(t => ({ label: t.bulan, a: t.pendapatan, b: t.biaya }))}
+                labelA="Pendapatan" labelB="Biaya"
+                colorA="var(--color-role-owner)" colorB="var(--color-risk-middle)"
+                formatValue={rupiahCompact}
+              />
+            )}
+          </div>
+
           <SectionTitle action={{ href: '/perencanaan', label: 'Semua rencana' }}>Perlu Persetujuan Anda</SectionTitle>
           {loading ? (
             <div className="flex flex-col gap-2">{[1, 2].map(i => <Skeleton key={i} height={64} rounded="rounded-xl" />)}</div>
@@ -336,21 +373,8 @@ function OwnerDashboard({ nama, data, loading }: { nama: string; data: Dashboard
         </div>
 
         <div className="flex flex-col gap-4">
-          {/* Financial summary */}
-          <div className="card p-5" style={{ background: 'linear-gradient(160deg, var(--color-ocean-950), var(--color-ocean-800))' }}>
-            <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: 'var(--color-ocean-300)' }}>Ringkasan Finansial</p>
-            <div className="flex flex-col gap-3">
-              <FinRow label="Total modal"      value={loading ? '—' : rupiah(data.totalModal)} />
-              <FinRow label="Total pendapatan" value={loading ? '—' : rupiah(data.totalPendapatan)} />
-              <div className="h-px" style={{ background: 'rgba(255,255,255,0.1)' }} />
-              <div className="flex items-center justify-between">
-                <span className="text-sm" style={{ color: 'var(--color-ocean-200)' }}>Profit</span>
-                <span className="text-lg font-bold" style={{ color: profit >= 0 ? '#4ade80' : '#f87171' }}>
-                  {loading ? '—' : rupiah(profit)}
-                </span>
-              </div>
-            </div>
-          </div>
+          <InsightCard insight={insight} error={insightError} loading={loadingInsight || !insightPayload} />
+          <RiskHealthCard risikoBreakdown={data.risikoBreakdown} roiPerKategori={roiPerKategori} loading={loading || loadingRoi} />
           <SystemSummary data={data} loading={loading} />
         </div>
       </div>
@@ -358,11 +382,142 @@ function OwnerDashboard({ nama, data, loading }: { nama: string; data: Dashboard
   )
 }
 
-function FinRow({ label, value }: { label: string; value: string }) {
+// ── Groq Insight card ──────────────────────────────────────────
+function InsightCard({ insight, error, loading }: { insight: string | null; error?: string | null; loading: boolean }) {
   return (
-    <div className="flex items-center justify-between">
-      <span className="text-sm" style={{ color: 'var(--color-ocean-200)' }}>{label}</span>
-      <span className="text-sm font-semibold" style={{ color: '#fff' }}>{value}</span>
+    <div className="card p-4" style={{ background: 'linear-gradient(160deg, var(--color-ocean-950), var(--color-ocean-800))' }}>
+      <div className="flex items-center gap-1.5 mb-2.5">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--color-sky-400)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+          <circle cx="12" cy="12" r="4" />
+        </svg>
+        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--color-ocean-300)' }}>Insight AI</p>
+      </div>
+      {loading ? (
+        <div className="flex flex-col gap-2"><Skeleton height={12} /><Skeleton height={12} width="80%" /></div>
+      ) : error ? (
+        <p className="text-xs leading-relaxed" style={{ color: 'var(--color-risk-worst)' }}>
+          Insight AI sedang tidak tersedia ({error}). Data chart di atas tetap akurat, hanya ringkasan naratifnya yang gagal dimuat.
+        </p>
+      ) : (
+        <p className="text-sm leading-relaxed" style={{ color: '#e2e8f0' }}>
+          {insight ?? 'Belum cukup data untuk menghasilkan insight.'}
+        </p>
+      )}
+    </div>
+  )
+}
+
+// ── Risk Health card (donut + ROI per kategori) ───────────────
+function RiskHealthCard({ risikoBreakdown, roiPerKategori, loading }: {
+  risikoBreakdown: DashboardData['risikoBreakdown']
+  roiPerKategori: { kategori: string; roiRata: number; jumlahSiklus: number }[]
+  loading: boolean
+}) {
+  const total = risikoBreakdown.reduce((s, r) => s + r.jumlah, 0)
+  const RISK_LABEL: Record<string, string> = { best: 'Best Case', middle: 'Middle Case', worst: 'Worst Case' }
+  const RISK_COLOR: Record<string, string> = { best: 'var(--color-risk-best)', middle: 'var(--color-risk-middle)', worst: 'var(--color-risk-worst)' }
+
+  return (
+    <div className="card p-4">
+      <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--color-text-muted)' }}>Kesehatan Portofolio Risiko</p>
+      {loading ? (
+        <Skeleton height={100} />
+      ) : total === 0 ? (
+        <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Belum ada rencana yang dinilai.</p>
+      ) : (
+        <>
+          <div className="flex items-center gap-3 mb-3 pb-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
+            <RiskDonut data={risikoBreakdown} size={64} />
+            <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+              Distribusi <b style={{ color: 'var(--color-text-primary)' }}>{total}</b> rencana yang pernah dinilai.
+            </div>
+          </div>
+          {roiPerKategori.length === 0 ? (
+            <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Belum cukup siklus selesai untuk hitung ROI per kategori.</p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <p className="text-xs font-semibold" style={{ color: 'var(--color-text-secondary)' }}>Rata-rata ROI per Kategori</p>
+              {roiPerKategori.map(r => (
+                <div key={r.kategori} className="flex items-center justify-between text-xs">
+                  <span className="flex items-center gap-1.5">
+                    <span style={{ width: 8, height: 8, borderRadius: 4, background: RISK_COLOR[r.kategori], display: 'inline-block' }} />
+                    <span style={{ color: 'var(--color-text-secondary)' }}>{RISK_LABEL[r.kategori]}</span>
+                    <span style={{ color: 'var(--color-text-muted)' }}>({r.jumlahSiklus}x)</span>
+                  </span>
+                  <span className="font-bold" style={{ color: r.roiRata >= 0 ? 'var(--color-risk-best)' : 'var(--color-risk-worst)' }}>
+                    {r.roiRata >= 0 ? '+' : ''}{r.roiRata.toFixed(0)}%
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
+
+// ── Recent Activity (Admin) ────────────────────────────────────
+// Bukan raw event stream — agregasi created_at dari beberapa tabel
+// (pengguna, kolam, skoring, biaya, persiapan) diurutkan waktu.
+// Cocok buat Admin (audit trail teknis), bukan Owner (butuh insight
+// yang sudah diolah, bukan log mentah).
+function relativeTime(iso: string) {
+  const diffMs = Date.now() - new Date(iso).getTime()
+  const min = Math.floor(diffMs / 60000)
+  if (min < 1) return 'Baru saja'
+  if (min < 60) return `${min} menit lalu`
+  const hr = Math.floor(min / 60)
+  if (hr < 24) return `${hr} jam lalu`
+  const day = Math.floor(hr / 24)
+  if (day < 30) return `${day} hari lalu`
+  return new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+}
+
+const ACTIVITY_ICON: Record<ActivityType, { icon: React.ReactNode; color: string; bg: string }> = {
+  user:      { icon: <IconUsers size={14} />,    color: '#7c3aed', bg: '#ede9fe' },
+  kolam:     { icon: <IconPond size={14} />,     color: '#0284c7', bg: '#e0f2fe' },
+  skoring:   { icon: <IconScale size={14} />,    color: '#b45309', bg: '#fef3c7' },
+  biaya:     { icon: <IconReport size={14} />,   color: '#15803d', bg: '#dcfce7' },
+  persiapan: { icon: <IconApproval size={14} />, color: '#0f766e', bg: '#ccfbf1' },
+}
+
+function RecentActivity() {
+  const { activities, loading } = useRecentActivity(8)
+  const listRef = useRef<HTMLDivElement>(null)
+
+  useGSAP(() => {
+    if (loading) return
+    gsap.from('.activity-item', { x: -10, opacity: 0, stagger: 0.06, duration: 0.35, ease: 'power2.out', clearProps: 'opacity,transform' })
+  }, { scope: listRef, dependencies: [loading, activities.length] })
+
+  return (
+    <div className="card p-4">
+      <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--color-text-muted)' }}>Recent Activity</p>
+      <div ref={listRef} className="flex flex-col gap-1">
+        {loading ? (
+          <div className="flex flex-col gap-2">{[1, 2, 3].map(i => <Skeleton key={i} height={40} rounded="rounded-lg" />)}</div>
+        ) : activities.length === 0 ? (
+          <p className="text-xs py-2" style={{ color: 'var(--color-text-muted)' }}>Belum ada aktivitas tercatat.</p>
+        ) : (
+          activities.map(a => {
+            const meta = ACTIVITY_ICON[a.type]
+            return (
+              <div key={a.id} className="activity-item flex items-start gap-2.5 py-2" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: meta.bg, color: meta.color }}>
+                  {meta.icon}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs leading-snug" style={{ color: 'var(--color-text-primary)' }}>{a.message}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>{relativeTime(a.timestamp)}</p>
+                </div>
+              </div>
+            )
+          })
+        )}
+      </div>
     </div>
   )
 }

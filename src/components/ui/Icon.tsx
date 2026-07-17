@@ -148,6 +148,16 @@ export function IconScale({ size = 20, strokeWidth = 1.75, className }: IconProp
   )
 }
 
+export function IconFish({ size = 20, strokeWidth = 1.75, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...stroke(strokeWidth)}>
+      <path d="M6.5 12c0-3.5 4-6.5 9-6.5 3 0 5.5 2.5 6.5 6.5-1 4-3.5 6.5-6.5 6.5-5 0-9-3-9-6.5z" />
+      <path d="M6.5 12c-1.5-1-3-1.5-4.5-1 1 .6 1.5 1 1.5 1s-.5.4-1.5 1c1.5.5 3 0 4.5-1z" />
+      <path d="M17 10.5h.01" />
+    </svg>
+  )
+}
+
 export function IconMenu({ size = 20, strokeWidth = 1.75, className }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...stroke(strokeWidth)}>
