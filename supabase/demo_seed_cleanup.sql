@@ -1,7 +1,8 @@
 -- ============================================================
--- HAPUS DATA DEMO — pasangan dari demo_seed.sql
+-- HAPUS DATA DEMO — pasangan dari demo_seed.sql DAN demo_seed_panen.sql
 -- ============================================================
--- Menghapus semua data yang ditandai "[DEMO]" di nama_kolam,
+-- Menghapus semua data yang ditandai "[DEMO]" di nama_kolam (dari
+-- kedua file seed sekaligus, tidak perlu dijalankan terpisah),
 -- urut sesuai foreign key (child dulu baru parent) supaya tidak
 -- kena constraint ON DELETE RESTRICT.
 -- Jalankan di Supabase SQL Editor kapan saja demo sudah tidak perlu.
