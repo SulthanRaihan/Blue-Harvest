@@ -231,7 +231,7 @@ export function BarChart({ data, unit = '', formatValue }: { data: BarDatum[]; u
   useGSAP(() => {
     barRefs.current.forEach((el, i) => {
       if (!el) return
-      const targetWidth = el.dataset.targetWidth
+      const targetWidth = el.dataset.targetWidth ?? '0'
       gsap.fromTo(el, { attr: { width: 0 } }, { attr: { width: targetWidth }, duration: 0.8, delay: i * 0.08, ease: 'power2.out' })
     })
   }, { dependencies: [data.map(d => d.value).join(',')] })

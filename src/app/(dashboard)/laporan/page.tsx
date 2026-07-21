@@ -8,7 +8,7 @@ import { useRencana } from '@/hooks/useRencana'
 import { usePerbandinganSiklus } from '@/hooks/useLaporan'
 import { useAuth } from '@/hooks/useAuth'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { BarChart } from '@/components/ui/Charts'
+import { PerbandinganBarChart } from '@/components/charts/RechartsKit'
 import type { NamaKomoditas } from '@/types/database'
 
 gsap.registerPlugin(useGSAP)
@@ -50,18 +50,18 @@ function PerbandinganSection() {
       <div className="grid sm:grid-cols-2 gap-4">
         <div className="card p-4">
           <div className="text-xs font-semibold mb-3" style={{ color: 'var(--color-text-muted)' }}>Profit per Siklus</div>
-          <BarChart
+          <PerbandinganBarChart
             data={data.map(d => ({
               label: d.label,
               value: d.profit,
-              color: d.profit >= 0 ? 'var(--color-risk-best)' : 'var(--color-risk-worst)',
+              fill: d.profit >= 0 ? '#16a34a' : '#dc2626',
             }))}
             formatValue={rupiahCompact}
           />
         </div>
         <div className="card p-4">
           <div className="text-xs font-semibold mb-3" style={{ color: 'var(--color-text-muted)' }}>FCR Rata-rata per Siklus</div>
-          <BarChart
+          <PerbandinganBarChart
             data={data.map(d => ({ label: d.label, value: Number(d.fcrRata.toFixed(2)) }))}
             formatValue={v => v.toFixed(2)}
           />

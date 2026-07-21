@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import Link from 'next/link'
 import { gsap } from 'gsap'
 import { useGSAP } from '@gsap/react'
@@ -17,7 +17,8 @@ import {
   IconReport, IconUsers, IconChevronRight,
 } from '@/components/ui/Icon'
 import { BubbleBackground } from '@/components/ui/BubbleBackground'
-import { RiskDonut, BarChart, DualLineChart, DeltaBadge } from '@/components/ui/Charts'
+import { RiskDonut, BarChart, DeltaBadge } from '@/components/ui/Charts'
+import { TrenAreaChart } from '@/components/charts/RechartsKit'
 import type { UserRole, NamaKomoditas } from '@/types/database'
 
 gsap.registerPlugin(useGSAP)
@@ -314,7 +315,8 @@ function OwnerDashboard({ nama, data, loading }: { nama: string; data: Dashboard
   const profit = data.totalPendapatan - data.totalModal
   const roi = data.totalModal > 0 ? (profit / data.totalModal) * 100 : 0
 
-  const { tren, loading: loadingTren, deltaPendapatanPct } = useTrenBulanan(6)
+  const [periodeBulan, setPeriodeBulan] = useState(6)
+  const { tren, loading: loadingTren, deltaPendapatanPct } = useTrenBulanan(periodeBulan)
   const { data: roiPerKategori, loading: loadingRoi } = useRoiPerKategori()
 
   const insightPayload: DashboardInsightPayload | null = (loading || loadingTren || loadingRoi) ? null : {
@@ -346,15 +348,31 @@ function OwnerDashboard({ nama, data, loading }: { nama: string; data: Dashboard
 
       <div className="grid lg:grid-cols-[1fr_300px] gap-5">
         <div>
-          <SectionTitle>Tren Pendapatan vs Biaya (6 Bulan Terakhir)</SectionTitle>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--color-text-muted)' }}>Tren Pendapatan vs Biaya</p>
+            <div className="flex items-center gap-1 p-0.5 rounded-lg" style={{ background: 'var(--color-surface-muted)' }}>
+              {[3, 6, 12].map(m => (
+                <button
+                  key={m}
+                  onClick={() => setPeriodeBulan(m)}
+                  className="text-xs font-semibold px-2.5 py-1 rounded-md transition-all"
+                  style={{
+                    background: periodeBulan === m ? 'var(--color-surface-card)' : 'transparent',
+                    color: periodeBulan === m ? 'var(--color-ocean-800)' : 'var(--color-text-muted)',
+                    boxShadow: periodeBulan === m ? 'var(--shadow-card)' : 'none',
+                  }}
+                >
+                  {m} bln
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="card p-4 mb-6">
             {loadingTren ? (
-              <Skeleton height={160} />
+              <Skeleton height={220} />
             ) : (
-              <DualLineChart
-                data={tren.map(t => ({ label: t.bulan, a: t.pendapatan, b: t.biaya }))}
-                labelA="Pendapatan" labelB="Biaya"
-                colorA="var(--color-role-owner)" colorB="var(--color-risk-middle)"
+              <TrenAreaChart
+                data={tren.map(t => ({ bulan: t.bulan, pendapatan: t.pendapatan, biaya: t.biaya }))}
                 formatValue={rupiahCompact}
               />
             )}
