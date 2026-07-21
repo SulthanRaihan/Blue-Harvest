@@ -99,7 +99,7 @@ export function Modal({ open, onClose, title, description, children, size = 'md'
 
 // ── Reusable form field ───────────────────────────────────────
 interface FieldProps {
-  label: string
+  label: React.ReactNode
   required?: boolean
   error?: string
   children: React.ReactNode
@@ -108,7 +108,7 @@ interface FieldProps {
 export function Field({ label, required, error, children }: FieldProps) {
   return (
     <div className="modal-field flex flex-col gap-1.5">
-      <label className="text-xs font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+      <label className="text-xs font-semibold flex items-center" style={{ color: 'var(--color-text-secondary)' }}>
         {label}{required && <span className="text-red-500 ml-0.5">*</span>}
       </label>
       {children}

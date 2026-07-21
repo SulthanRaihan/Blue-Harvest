@@ -19,6 +19,8 @@ import {
 import { BubbleBackground } from '@/components/ui/BubbleBackground'
 import { RiskDonut, BarChart, DeltaBadge } from '@/components/ui/Charts'
 import { TrenAreaChart } from '@/components/charts/RechartsKit'
+import { InfoHint } from '@/components/ui/InfoHint'
+import { EmptyState } from '@/components/ui/EmptyState'
 import type { UserRole, NamaKomoditas } from '@/types/database'
 
 gsap.registerPlugin(useGSAP)
@@ -59,7 +61,7 @@ const ROLE_THEME: Record<UserRole, { accent: string; accentSoft: string; label: 
 
 // ── Animated stat card ────────────────────────────────────────
 interface StatProps {
-  label: string
+  label: React.ReactNode
   value: number
   unit: string
   icon: React.ReactNode
@@ -236,7 +238,11 @@ function PetambakDashboard({ nama, data, loading }: { nama: string; data: Dashbo
           {loading ? (
             <div className="flex flex-col gap-2">{[1, 2].map(i => <Skeleton key={i} height={64} rounded="rounded-xl" />)}</div>
           ) : data.siklusAktifList.length === 0 ? (
-            <EmptyHint text="Belum ada siklus aktif. Buat rencana tebar lalu aktifkan setelah disetujui." />
+            <EmptyState
+              judul="Belum ada siklus berjalan"
+              deskripsi="Mulai dengan membuat rencana tebar. Setelah Owner menyetujui, siklus bisa diaktifkan dan Anda mulai mencatat operasional harian."
+              aksi={{ href: '/perencanaan', label: 'Buat Rencana Tebar' }}
+            />
           ) : (
             <div className="flex flex-col gap-2">
               {data.siklusAktifList.map(r => <RencanaRow key={r.id_rencana} r={r} accent="#0284c7" />)}
@@ -343,7 +349,7 @@ function OwnerDashboard({ nama, data, loading }: { nama: string; data: Dashboard
         <StatCard label="Siklus berjalan"   value={data.siklusAktif}      unit="siklus"  icon={<IconCycle size={17} />}    color="#0f766e" bg="#ccfbf1" loading={loading} href="/operasional" />
         <StatCard label="Total pendapatan"  value={data.totalPendapatan}  unit="Rp"      icon={<IconScale size={17} />}    color="#15803d" bg="#dcfce7" loading={loading || loadingTren} format={rupiahCompact}
           delta={<DeltaBadge pct={deltaPendapatanPct} />} />
-        <StatCard label="ROI kumulatif"     value={Math.round(roi)}       unit="%"       icon={<IconReport size={17} />}   color={roi >= 0 ? '#15803d' : '#b91c1c'} bg={roi >= 0 ? '#dcfce7' : '#fee2e2'} loading={loading} format={v => `${v}%`} />
+        <StatCard label={<>ROI kumulatif<InfoHint istilah="roi" /></>} value={Math.round(roi)} unit="%" icon={<IconReport size={17} />}   color={roi >= 0 ? '#15803d' : '#b91c1c'} bg={roi >= 0 ? '#dcfce7' : '#fee2e2'} loading={loading} format={v => `${v}%`} />
       </div>
 
       <div className="grid lg:grid-cols-[1fr_300px] gap-5">

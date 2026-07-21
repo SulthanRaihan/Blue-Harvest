@@ -9,6 +9,7 @@ import { usePerbandinganSiklus } from '@/hooks/useLaporan'
 import { useAuth } from '@/hooks/useAuth'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { PerbandinganBarChart } from '@/components/charts/RechartsKit'
+import { EmptyState } from '@/components/ui/EmptyState'
 import type { NamaKomoditas } from '@/types/database'
 
 gsap.registerPlugin(useGSAP)
@@ -104,9 +105,11 @@ export default function LaporanPage() {
           {[1, 2, 3].map(i => <Skeleton key={i} height={130} rounded="rounded-2xl" />)}
         </div>
       ) : rencana.length === 0 ? (
-        <div className="card flex flex-col items-center py-16 gap-3 text-center">
-          <p className="text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>Belum ada data siklus</p>
-        </div>
+        <EmptyState
+          judul="Belum ada data siklus"
+          deskripsi="Laporan terbentuk otomatis dari siklus budidaya yang berjalan. Mulai dengan membuat rencana tebar, lalu catat operasional sampai panen."
+          aksi={{ href: '/perencanaan', label: 'Buka Perencanaan' }}
+        />
       ) : (
         <>
           {/* Siklus aktif — bisa diselesaikan */}

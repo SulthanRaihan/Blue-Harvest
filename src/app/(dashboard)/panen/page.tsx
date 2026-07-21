@@ -9,6 +9,7 @@ import { Modal, Field, Input, Select, ModalActions } from '@/components/ui/Modal
 import { StatusBadge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useToast } from '@/components/ui/Toast'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { uploadFoto } from '@/lib/storage'
 import type { NamaKomoditas, GradePanen, Panen } from '@/types/database'
 
@@ -369,10 +370,11 @@ export default function PanenPage() {
           {[1, 2].map(i => <Skeleton key={i} height={160} rounded="rounded-2xl" />)}
         </div>
       ) : harvestabl.length === 0 ? (
-        <div className="card flex flex-col items-center py-16 gap-3 text-center">
-          <p className="font-medium text-sm" style={{ color: 'var(--color-text-primary)' }}>Tidak ada siklus aktif</p>
-          <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Aktifkan siklus budidaya terlebih dahulu</p>
-        </div>
+        <EmptyState
+          judul="Belum ada siklus yang bisa dipanen"
+          deskripsi="Panen hanya bisa dicatat untuk siklus yang sudah aktif. Aktifkan rencana tebar yang sudah disetujui Owner terlebih dahulu."
+          aksi={{ href: '/perencanaan', label: 'Lihat Rencana Tebar' }}
+        />
       ) : (
         <div className="flex flex-col gap-8">
           {harvestabl.map(r => <RencanaSection key={r.id_rencana} rencana={r} />)}

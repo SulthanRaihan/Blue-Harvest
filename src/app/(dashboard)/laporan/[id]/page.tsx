@@ -9,6 +9,7 @@ import { useLaporanDetail } from '@/hooks/useLaporan'
 import { useBiaya, KATEGORI_BIAYA_LABEL } from '@/hooks/useBiaya'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { GrowthChart, PondGauge, CategoryDonut, CATEGORY_DONUT_COLORS } from '@/components/ui/Charts'
+import { InfoHint } from '@/components/ui/InfoHint'
 import type { NamaKomoditas, GradePanen } from '@/types/database'
 
 gsap.registerPlugin(useGSAP)
@@ -61,10 +62,10 @@ function buatInsightPerbandingan(
 }
 
 // ── Stat card ─────────────────────────────────────────────────
-function StatCard({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: boolean }) {
+function StatCard({ label, value, sub, accent }: { label: React.ReactNode; value: string; sub?: string; accent?: boolean }) {
   return (
     <div className="card p-5 text-center min-w-0">
-      <div className="text-xs mb-1 truncate" style={{ color: 'var(--color-text-muted)' }}>{label}</div>
+      <div className="text-xs mb-1 flex items-center justify-center" style={{ color: 'var(--color-text-muted)' }}>{label}</div>
       <div
         className="font-black leading-tight break-words"
         style={{
@@ -207,9 +208,9 @@ export default function LaporanDetailPage() {
       <div className="report-section grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         <StatCard label="Total Produksi" value={`${totalProduksi.toFixed(1)} kg`} sub={`${panen.length} panen`} />
         <StatCard label="Total Pendapatan" value={formatRupiah(totalPendapatan)} />
-        <StatCard label="Profit / Rugi" value={formatRupiah(profit)}
+        <StatCard label={<>Profit / Rugi<InfoHint istilah="roi" /></>} value={formatRupiah(profit)}
           sub={`ROI ${roi}%`} accent={profit >= 0} />
-        <StatCard label="FCR Rata-rata" value={fcrRata.toFixed(2)}
+        <StatCard label={<>FCR Rata-rata<InfoHint istilah="fcr" /></>} value={fcrRata.toFixed(2)}
           sub={fcrStandar ? `Standar: ${fcrStandar}` : 'Aktual'} accent={fcrOk} />
       </div>
 

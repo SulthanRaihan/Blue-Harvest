@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { WaterQualityBar, CategoryDonut, CATEGORY_DONUT_COLORS } from '@/components/ui/Charts'
 import { useToast } from '@/components/ui/Toast'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
+import { InfoHint } from '@/components/ui/InfoHint'
 import type { NamaKomoditas, OperasionalHarian, KualitasAir, KategoriBiaya } from '@/types/database'
 
 gsap.registerPlugin(useGSAP)
@@ -421,11 +422,11 @@ function TabKualitas({ idKolam, komoditas }: {
         description="Input pengukuran manual dari lapangan. Sistem akan menandai parameter yang di luar batas normal.">
         <div className="flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-3">
-            <Field label="pH" required>
+            <Field label={<>pH<InfoHint istilah="ph" /></>} required>
               <Input type="number" step="0.1" min="0" max="14" placeholder="7.5"
                 value={form.ph} onChange={ev => setForm(f => ({ ...f, ph: ev.target.value }))} />
             </Field>
-            <Field label="DO (ppm)" required>
+            <Field label={<>DO (ppm)<InfoHint istilah="do" /></>} required>
               <Input type="number" step="0.1" min="0" placeholder="5.0"
                 value={form.do_ppm} onChange={ev => setForm(f => ({ ...f, do_ppm: ev.target.value }))} />
             </Field>
@@ -433,7 +434,7 @@ function TabKualitas({ idKolam, komoditas }: {
               <Input type="number" step="0.1" min="0" placeholder="28.0"
                 value={form.suhu_celsius} onChange={ev => setForm(f => ({ ...f, suhu_celsius: ev.target.value }))} />
             </Field>
-            <Field label="Salinitas (ppt)" required>
+            <Field label={<>Salinitas (ppt)<InfoHint istilah="salinitas" /></>} required>
               <Input type="number" step="0.1" min="0" placeholder="15.0"
                 value={form.salinitas_ppt} onChange={ev => setForm(f => ({ ...f, salinitas_ppt: ev.target.value }))} />
             </Field>
