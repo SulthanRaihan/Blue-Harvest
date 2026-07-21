@@ -31,8 +31,17 @@ export function Modal({ open, onClose, title, description, children, size = 'md'
       )
       gsap.fromTo(panelRef.current,
         { autoAlpha: 0, y: 16, scale: 0.97 },
-        { autoAlpha: 1, y: 0, scale: 1, duration: 0.25, ease: 'power2.out' }
+        { autoAlpha: 1, y: 0, scale: 1, duration: 0.3, ease: 'back.out(1.4)' }
       )
+      // Field masuk bertahap supaya form terasa hidup, bukan muncul
+      // sekaligus. Gerak halus dan cepat, bukan pertunjukan animasi.
+      const fields = panelRef.current.querySelectorAll('.modal-field')
+      if (fields.length) {
+        gsap.fromTo(fields,
+          { y: 10, autoAlpha: 0 },
+          { y: 0, autoAlpha: 1, duration: 0.3, stagger: 0.05, ease: 'power2.out', delay: 0.1, clearProps: 'transform,opacity' }
+        )
+      }
     } else {
       gsap.to(panelRef.current, { autoAlpha: 0, y: 8, scale: 0.98, duration: 0.18, ease: 'power2.in' })
       gsap.to(backdropRef.current, { autoAlpha: 0, duration: 0.2, ease: 'none' })
@@ -98,7 +107,7 @@ interface FieldProps {
 
 export function Field({ label, required, error, children }: FieldProps) {
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="modal-field flex flex-col gap-1.5">
       <label className="text-xs font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
         {label}{required && <span className="text-red-500 ml-0.5">*</span>}
       </label>
@@ -122,8 +131,18 @@ export function Input({ error, className = '', ...props }: InputProps) {
         background: 'var(--color-surface-muted)',
         color: 'var(--color-text-primary)',
       }}
-      onFocus={e => !error && (e.currentTarget.style.borderColor = 'var(--color-accent)')}
-      onBlur={e => !error && (e.currentTarget.style.borderColor = 'var(--color-border)')}
+      onFocus={e => {
+        if (error) return
+        e.currentTarget.style.borderColor = 'var(--color-accent)'
+        e.currentTarget.style.background = 'var(--color-surface-card)'
+        e.currentTarget.style.boxShadow = '0 0 0 3px rgba(14,165,233,0.12)'
+      }}
+      onBlur={e => {
+        if (error) return
+        e.currentTarget.style.borderColor = 'var(--color-border)'
+        e.currentTarget.style.background = 'var(--color-surface-muted)'
+        e.currentTarget.style.boxShadow = 'none'
+      }}
       {...props}
     />
   )
@@ -142,8 +161,16 @@ export function Select({ error, className = '', children, ...props }: SelectProp
         background: 'var(--color-surface-muted)',
         color: 'var(--color-text-primary)',
       }}
-      onFocus={e => !error && (e.currentTarget.style.borderColor = 'var(--color-accent)')}
-      onBlur={e => !error && (e.currentTarget.style.borderColor = 'var(--color-border)')}
+      onFocus={e => {
+        if (error) return
+        e.currentTarget.style.borderColor = 'var(--color-accent)'
+        e.currentTarget.style.boxShadow = '0 0 0 3px rgba(14,165,233,0.12)'
+      }}
+      onBlur={e => {
+        if (error) return
+        e.currentTarget.style.borderColor = 'var(--color-border)'
+        e.currentTarget.style.boxShadow = 'none'
+      }}
       {...props}
     >
       {children}
@@ -178,12 +205,14 @@ export function ModalActions({ onCancel, onConfirm, confirmLabel = 'Simpan', loa
         type="button"
         onClick={onConfirm}
         disabled={loading}
-        className="px-4 py-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-50"
+        className="px-4 py-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-50 disabled:pointer-events-none"
         style={{
           background: danger ? 'var(--color-risk-worst)' : 'var(--color-ocean-900)',
           color: '#fff',
-          boxShadow: danger ? 'none' : '0 2px 8px rgba(11,45,78,0.3)',
+          boxShadow: danger ? '0 2px 8px rgba(220,38,38,0.3)' : '0 2px 8px rgba(11,45,78,0.3)',
         }}
+        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = danger ? '0 4px 14px rgba(220,38,38,0.4)' : '0 4px 14px rgba(11,45,78,0.4)' }}
+        onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = danger ? '0 2px 8px rgba(220,38,38,0.3)' : '0 2px 8px rgba(11,45,78,0.3)' }}
       >
         {loading ? 'Menyimpan...' : confirmLabel}
       </button>

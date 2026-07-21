@@ -7,6 +7,7 @@ import { useKomoditas, KOMODITAS_LABEL } from '@/hooks/useKomoditas'
 import { Modal, Field, Input, ModalActions } from '@/components/ui/Modal'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { IconFish } from '@/components/ui/Icon'
+import { useToast } from '@/components/ui/Toast'
 import type { Komoditas } from '@/types/database'
 
 gsap.registerPlugin(useGSAP)
@@ -38,6 +39,7 @@ function toForm(k: Komoditas): FormState {
 
 // ── Komoditas card ────────────────────────────────────────────
 function KomoditasCard({ komoditas, onSave }: { komoditas: Komoditas; onSave: (updates: Partial<Komoditas>) => Promise<void> }) {
+  const toast = useToast()
   const [open, setOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -72,6 +74,7 @@ function KomoditasCard({ komoditas, onSave }: { komoditas: Komoditas; onSave: (u
         harga_acuan_per_kg: form.harga_acuan_per_kg ? Number(form.harga_acuan_per_kg) : null,
       })
       setOpen(false)
+      toast.success(`Data ${KOMODITAS_LABEL[komoditas.nama]} diperbarui`)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Gagal menyimpan')
     } finally {

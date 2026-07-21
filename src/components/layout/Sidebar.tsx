@@ -133,7 +133,12 @@ export default function Sidebar() {
 
       {/* User + Logout */}
       <div className="px-3 pb-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px' }}>
-        <div className="flex items-center gap-3 px-3 py-2.5 mb-1">
+        <Link
+          href="/profil"
+          className="flex items-center gap-3 px-3 py-2.5 mb-1 rounded-lg transition-colors"
+          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+        >
           {/* Avatar */}
           <div
             className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
@@ -150,7 +155,7 @@ export default function Sidebar() {
               {ROLE_LABEL[role ?? 'petambak']}
             </div>
           </div>
-        </div>
+        </Link>
 
         <button
           onClick={handleLogout}

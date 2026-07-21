@@ -8,6 +8,7 @@ import { usePanenByRencana, useDistribusi } from '@/hooks/usePanen'
 import { Modal, Field, Input, Select, ModalActions } from '@/components/ui/Modal'
 import { StatusBadge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { useToast } from '@/components/ui/Toast'
 import { uploadFoto } from '@/lib/storage'
 import type { NamaKomoditas, GradePanen, Panen } from '@/types/database'
 
@@ -34,6 +35,7 @@ function formatTanggal(s: string) {
 // ── Distribusi panel ──────────────────────────────────────────
 function DistribusiPanel({ idPanen, totalBobot }: { idPanen: string; totalBobot: number }) {
   const { distribusi, loading, create, updateStatus } = useDistribusi(idPanen)
+  const toast = useToast()
   const [open, setOpen]   = useState(false)
   const [saving, setSaving] = useState(false)
   const [formErr, setFormErr] = useState<string | null>(null)
@@ -60,6 +62,7 @@ function DistribusiPanel({ idPanen, totalBobot }: { idPanen: string; totalBobot:
       })
       setOpen(false)
       setForm(emptyForm)
+      toast.success('Distribusi tercatat')
     } catch (e) {
       setFormErr(e instanceof Error ? e.message : 'Gagal menyimpan')
     } finally {
@@ -99,7 +102,7 @@ function DistribusiPanel({ idPanen, totalBobot }: { idPanen: string; totalBobot:
               <div className="flex items-center gap-2">
                 <StatusBadge status={d.status} />
                 {d.status === 'pending' && (
-                  <button onClick={() => updateStatus(d.id_distribusi, 'selesai')}
+                  <button onClick={async () => { await updateStatus(d.id_distribusi, 'selesai'); toast.success('Distribusi ditandai selesai') }}
                     className="text-xs px-2 py-1 rounded-lg"
                     style={{ background: 'var(--color-risk-best-bg)', color: 'var(--color-risk-best)', border: '1px solid #bbf7d0' }}>
                     Selesai
@@ -206,6 +209,7 @@ function PanenCard({ panen, onUpload, uploading }: { panen: Panen; onUpload: (fi
 // ── Rencana selector + panen form ────────────────────────────
 function RencanaSection({ rencana }: { rencana: ReturnType<typeof useRencana>['rencana'][0] }) {
   const { panen, loading, create, setFoto } = usePanenByRencana(rencana.id_rencana)
+  const toast = useToast()
   const [open, setOpen]   = useState(false)
   const [saving, setSaving] = useState(false)
   const [formErr, setFormErr] = useState<string | null>(null)
@@ -216,8 +220,9 @@ function RencanaSection({ rencana }: { rencana: ReturnType<typeof useRencana>['r
     try {
       const url = await uploadFoto(`panen/${idPanen}`, file)
       await setFoto(idPanen, url)
+      toast.success('Foto dokumentasi terunggah')
     } catch (e) {
-      setFormErr(e instanceof Error ? e.message : 'Gagal mengunggah foto')
+      toast.error(e instanceof Error ? e.message : 'Gagal mengunggah foto')
     } finally {
       setUploadingId(null)
     }
@@ -243,6 +248,7 @@ function RencanaSection({ rencana }: { rencana: ReturnType<typeof useRencana>['r
       })
       setOpen(false)
       setForm(emptyForm)
+      toast.success('Hasil panen tercatat')
     } catch (e) {
       setFormErr(e instanceof Error ? e.message : 'Gagal menyimpan panen')
     } finally {

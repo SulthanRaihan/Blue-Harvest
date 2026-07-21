@@ -4,6 +4,8 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import Sidebar, { MobileBottomNav } from '@/components/layout/Sidebar'
+import { ToastProvider } from '@/components/ui/Toast'
+import { ConfirmProvider } from '@/components/ui/ConfirmDialog'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -49,12 +51,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!user) return null
 
   return (
-    <div className="min-h-screen flex" style={{ background: 'var(--color-surface)' }}>
-      <Sidebar />
-      <main className="flex-1 lg:ml-60 pb-20 lg:pb-0 min-h-screen">
-        {children}
-      </main>
-      <MobileBottomNav />
-    </div>
+    <ToastProvider>
+      <ConfirmProvider>
+        <div className="min-h-screen flex" style={{ background: 'var(--color-surface)' }}>
+          <Sidebar />
+          <main className="flex-1 lg:ml-60 pb-20 lg:pb-0 min-h-screen">
+            {children}
+          </main>
+          <MobileBottomNav />
+        </div>
+      </ConfirmProvider>
+    </ToastProvider>
   )
 }

@@ -10,6 +10,8 @@ import { useAuth } from '@/hooks/useAuth'
 import { Modal, Field, Input, Select, ModalActions } from '@/components/ui/Modal'
 import { RoleBadge, StatusBadge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { useToast } from '@/components/ui/Toast'
+import { useConfirm } from '@/components/ui/ConfirmDialog'
 import type { UserRole } from '@/types/database'
 
 gsap.registerPlugin(useGSAP)
@@ -53,6 +55,7 @@ function TableSkeleton({ rows = 4 }: { rows?: number }) {
 function TabPengguna() {
   const { pengguna, loading, error, refresh, updateRole } = usePengguna()
   const { user: currentUser } = useAuth()
+  const toast = useToast()
 
   const [addOpen, setAddOpen]       = useState(false)
   const [editTarget, setEditTarget] = useState<string | null>(null)
@@ -81,6 +84,7 @@ function TabPengguna() {
       setAddOpen(false)
       setForm({ nama: '', email: '', password: '', role: 'petambak' })
       await refresh()
+      toast.success(`Akun ${form.nama} berhasil dibuat`)
     } catch (e) {
       setFormError(e instanceof Error ? e.message : 'Gagal membuat pengguna')
     } finally {
@@ -94,6 +98,9 @@ function TabPengguna() {
     try {
       await updateRole(editTarget, editRole)
       setEditTarget(null)
+      toast.success('Role pengguna diperbarui')
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Gagal memperbarui role')
     } finally {
       setSaving(false)
     }
@@ -219,6 +226,8 @@ function TabKolam() {
   const { kolam, loading, error, create, update, toggleStatus } = useKolam()
   const { pengguna } = usePengguna()
   const { user, role } = useAuth()
+  const toast = useToast()
+  const confirm = useConfirm()
 
   const [addOpen, setAddOpen]       = useState(false)
   const [editTarget, setEditTarget] = useState<string | null>(null)
@@ -228,12 +237,23 @@ function TabKolam() {
   const emptyForm = { nama_kolam: '', luas_ha: '', lokasi: '', id_pengguna: '' }
   const [form, setForm]             = useState(emptyForm)
 
-  const handleToggle = async (id: string, status: typeof kolam[0]['status']) => {
+  const handleToggle = async (id: string, status: typeof kolam[0]['status'], nama: string) => {
     setToggleError(null)
+    if (status === 'aktif') {
+      const ok = await confirm({
+        title: 'Nonaktifkan kolam ini?',
+        message: `Kolam ${nama} tidak akan muncul sebagai pilihan saat membuat rencana tebar baru. Kolam bisa diaktifkan lagi kapan saja.`,
+        confirmLabel: 'Nonaktifkan',
+      })
+      if (!ok) return
+    }
     try {
       await toggleStatus(id, status)
+      toast.success(status === 'aktif' ? `Kolam ${nama} dinonaktifkan` : `Kolam ${nama} diaktifkan`)
     } catch (e) {
-      setToggleError(e instanceof Error ? e.message : 'Gagal mengubah status kolam')
+      const msg = e instanceof Error ? e.message : 'Gagal mengubah status kolam'
+      setToggleError(msg)
+      toast.error(msg)
     }
   }
 
@@ -266,9 +286,11 @@ function TabKolam() {
       if (editTarget) {
         await update(editTarget, payload)
         setEditTarget(null)
+        toast.success('Data kolam diperbarui')
       } else {
         await create(payload)
         setAddOpen(false)
+        toast.success('Kolam baru ditambahkan')
       }
       setForm(emptyForm)
     } catch (e) {
@@ -346,7 +368,7 @@ function TabKolam() {
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >Edit</button>
                 <button
-                  onClick={() => handleToggle(k.id_kolam, k.status)}
+                  onClick={() => handleToggle(k.id_kolam, k.status, k.nama_kolam)}
                   className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
                   style={{
                     border: `1px solid ${k.status === 'aktif' ? '#fca5a5' : 'var(--color-border)'}`,

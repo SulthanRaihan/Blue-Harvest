@@ -11,6 +11,8 @@ import { useBiaya, KATEGORI_BIAYA_LABEL } from '@/hooks/useBiaya'
 import { Modal, Field, Input, Select, ModalActions } from '@/components/ui/Modal'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { WaterQualityBar, CategoryDonut, CATEGORY_DONUT_COLORS } from '@/components/ui/Charts'
+import { useToast } from '@/components/ui/Toast'
+import { useConfirm } from '@/components/ui/ConfirmDialog'
 import type { NamaKomoditas, OperasionalHarian, KualitasAir, KategoriBiaya } from '@/types/database'
 
 gsap.registerPlugin(useGSAP)
@@ -69,6 +71,7 @@ function RowSkeleton({ rows = 3 }: { rows?: number }) {
 // ════════════════════════════════════════════════════════════
 function TabPakan({ idRencana }: { idRencana: string }) {
   const { entries, loading, error, add } = useOperasional(idRencana)
+  const toast = useToast()
   const [open, setOpen]     = useState(false)
   const [saving, setSaving] = useState(false)
   const [formErr, setFormErr] = useState<string | null>(null)
@@ -93,6 +96,7 @@ function TabPakan({ idRencana }: { idRencana: string }) {
       })
       setOpen(false)
       setForm(emptyForm)
+      toast.success('Log harian tersimpan')
     } catch (e) {
       setFormErr(e instanceof Error ? e.message : 'Gagal menyimpan')
     } finally {
@@ -161,6 +165,8 @@ function TabPakan({ idRencana }: { idRencana: string }) {
 // ── Tab: Biaya Operasional ──────────────────────────────────────
 function TabBiaya({ idRencana }: { idRencana: string }) {
   const { entries, loading, error, add, remove, total, breakdown } = useBiaya(idRencana)
+  const toast = useToast()
+  const confirm = useConfirm()
   const [open, setOpen]       = useState(false)
   const [saving, setSaving]   = useState(false)
   const [formErr, setFormErr] = useState<string | null>(null)
@@ -184,10 +190,27 @@ function TabBiaya({ idRencana }: { idRencana: string }) {
       })
       setOpen(false)
       setForm(emptyForm)
+      toast.success('Biaya operasional tersimpan')
     } catch (e) {
       setFormErr(e instanceof Error ? e.message : 'Gagal menyimpan biaya')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleRemove = async (id: string, kategori: KategoriBiaya) => {
+    const ok = await confirm({
+      title: 'Hapus biaya ini?',
+      message: `Catatan biaya ${KATEGORI_BIAYA_LABEL[kategori]} akan dihapus permanen dan tidak bisa dikembalikan.`,
+      confirmLabel: 'Hapus',
+      danger: true,
+    })
+    if (!ok) return
+    try {
+      await remove(id)
+      toast.success('Biaya berhasil dihapus')
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Gagal menghapus biaya')
     }
   }
 
@@ -238,7 +261,7 @@ function TabBiaya({ idRencana }: { idRencana: string }) {
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-sm font-bold" style={{ color: 'var(--color-ocean-800)' }}>{formatRupiah(e.jumlah_rp)}</span>
-                <button onClick={() => remove(e.id_biaya)} className="text-xs" style={{ color: 'var(--color-risk-worst)' }}>Hapus</button>
+                <button onClick={() => handleRemove(e.id_biaya, e.kategori)} className="text-xs font-medium transition-colors hover:underline" style={{ color: 'var(--color-risk-worst)' }}>Hapus</button>
               </div>
             </div>
           ))}
@@ -327,6 +350,7 @@ function TabKualitas({ idKolam, komoditas }: {
   komoditas: { target_ph_min: number; target_ph_max: number; target_suhu_min: number; target_suhu_max: number; target_do_min: number; target_salinitas_min: number; target_salinitas_max: number } | null
 }) {
   const { entries, loading, error, add } = useKualitas(idKolam)
+  const toast = useToast()
   const [open, setOpen]     = useState(false)
   const [saving, setSaving] = useState(false)
   const [formErr, setFormErr] = useState<string | null>(null)
@@ -350,6 +374,7 @@ function TabKualitas({ idKolam, komoditas }: {
       })
       setOpen(false)
       setForm(emptyForm)
+      toast.success('Data kualitas air tersimpan')
     } catch (e) {
       setFormErr(e instanceof Error ? e.message : 'Gagal menyimpan')
     } finally {
