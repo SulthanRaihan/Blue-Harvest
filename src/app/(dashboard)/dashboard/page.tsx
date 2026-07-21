@@ -7,6 +7,8 @@ import { useGSAP } from '@gsap/react'
 import { useAuth } from '@/hooks/useAuth'
 import { useDashboard, type DashboardData, type RencanaRingkas } from '@/hooks/useDashboard'
 import { useRecentActivity } from '@/hooks/useRecentActivity'
+import { useJadwalHariIni } from '@/hooks/useJadwalHariIni'
+import type { TugasHarian } from '@/lib/repositories/jadwal.repository'
 import { useTrenBulanan, useRoiPerKategori, useDashboardInsight, type DashboardInsightPayload } from '@/hooks/useOwnerInsight'
 import type { ActivityType } from '@/lib/repositories/activity.repository'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -231,6 +233,8 @@ function PetambakDashboard({ nama, data, loading }: { nama: string; data: Dashbo
         <StatCard label="Menunggu approval" value={data.menungguApproval} unit="rencana" icon={<IconApproval size={17} />} color="#b45309" bg="#fef3c7" loading={loading} href="/perencanaan" />
         <StatCard label="Panen bulan ini"   value={data.panenBulanIniKg}  unit="kg"      icon={<IconScale size={17} />}    color="#15803d" bg="#dcfce7" loading={loading} format={v => v.toLocaleString('id-ID')} href="/panen" />
       </div>
+
+      <JadwalHariIni />
 
       <div className="grid lg:grid-cols-[1fr_300px] gap-5">
         <div>
@@ -482,6 +486,108 @@ function RiskHealthCard({ risikoBreakdown, roiPerKategori, loading }: {
   )
 }
 
+
+// ── Jadwal Hari Ini (Petambak) ─────────────────────────────────
+// Bukan daftar semua pekerjaan, melainkan apa yang BELUM tercatat
+// hari ini. Progresnya sekaligus jadi penanda kebiasaan: petambak
+// lebih rajin kalau kemajuannya terlihat, bukan cuma disuruh.
+const TUGAS_ICON: Record<TugasHarian['jenis'], React.ReactNode> = {
+  pakan: <IconOperational size={15} />,
+  kualitas_air: <IconPond size={15} />,
+  sampling: <IconSampling size={15} />,
+}
+
+const TUGAS_JUDUL: Record<TugasHarian['jenis'], string> = {
+  pakan: 'Catat pakan harian',
+  kualitas_air: 'Cek kualitas air',
+  sampling: 'Sampling mingguan',
+}
+
+function JadwalHariIni() {
+  const { jadwal, loading, persen } = useJadwalHariIni()
+  const fillRef = useRef<HTMLDivElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
+
+  useGSAP(() => {
+    if (loading || !fillRef.current) return
+    gsap.fromTo(fillRef.current, { width: '0%' }, { width: `${persen}%`, duration: 1, ease: 'power2.out' })
+    gsap.from('.tugas-item', { x: -8, opacity: 0, stagger: 0.06, duration: 0.35, ease: 'power2.out', clearProps: 'opacity,transform' })
+  }, { scope: listRef, dependencies: [loading, persen] })
+
+  if (loading) return <Skeleton height={180} rounded="rounded-2xl" />
+  if (jadwal.total === 0) return null
+
+  const belum = jadwal.tugas.filter(t => !t.selesai)
+  const tuntas = persen === 100
+
+  return (
+    <div ref={listRef} className="card overflow-hidden mb-6">
+      <div className="px-5 pt-5 pb-4">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div>
+            <p className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>Jadwal Hari Ini</p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+              {tuntas
+                ? 'Semua catatan hari ini sudah lengkap. Kerja bagus.'
+                : `${belum.length} catatan belum masuk hari ini`}
+            </p>
+          </div>
+          <span className="text-lg font-black shrink-0" style={{ color: tuntas ? 'var(--color-risk-best)' : 'var(--color-ocean-700)' }}>
+            {jadwal.selesai}/{jadwal.total}
+          </span>
+        </div>
+        <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--color-ocean-50)' }}>
+          <div
+            ref={fillRef}
+            className="h-full rounded-full"
+            style={{
+              width: 0,
+              background: tuntas
+                ? 'var(--color-risk-best)'
+                : 'linear-gradient(90deg, var(--color-ocean-500), var(--color-sky-400))',
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
+        {jadwal.tugas.map(t => (
+          <Link
+            key={t.id}
+            href={t.href}
+            className="tugas-item flex items-center gap-3 px-5 py-3 transition-colors"
+            style={{ textDecoration: 'none' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-surface-muted)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+          >
+            <span
+              className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+              style={{
+                background: t.selesai ? 'var(--color-risk-best-bg)' : 'var(--color-ocean-50)',
+                color: t.selesai ? 'var(--color-risk-best)' : 'var(--color-ocean-600)',
+              }}
+            >
+              {t.selesai ? (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              ) : TUGAS_ICON[t.jenis]}
+            </span>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium truncate" style={{ color: t.selesai ? 'var(--color-text-muted)' : 'var(--color-text-primary)' }}>
+                {TUGAS_JUDUL[t.jenis]}
+              </div>
+              <div className="text-xs truncate" style={{ color: 'var(--color-text-muted)' }}>
+                {t.namaKolam} · {t.keterangan}
+              </div>
+            </div>
+            {!t.selesai && <IconChevronRight size={14} className="shrink-0" style={{ color: 'var(--color-text-muted)' } as React.CSSProperties} />}
+          </Link>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 // ── Recent Activity (Admin) ────────────────────────────────────
 // Bukan raw event stream — agregasi created_at dari beberapa tabel
