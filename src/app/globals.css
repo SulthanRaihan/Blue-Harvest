@@ -27,6 +27,15 @@
   --color-sky-400:  #38bdf8;
   --color-sky-100:  #e0f2fe;
 
+  /* Notion blue dikombinasikan dengan ocean. Biru cerah Notion dipakai
+     untuk aksi interaktif dan penanda aktif, ocean deep tetap untuk
+     chrome gelap seperti sidebar dan hero. */
+  --color-notion-500: #2383e2;
+  --color-notion-600: #1b6fc7;
+  --color-notion-700: #155aa3;
+  --color-notion-100: #e7f1fb;
+  --color-notion-50:  #f2f7fd;
+
   /* Typography */
   --font-sans: var(--font-geist-sans), 'Inter', system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), 'JetBrains Mono', monospace;
@@ -46,22 +55,24 @@
    resolve ke string kosong. Simpan di :root supaya selalu ada di
    compiled CSS apapun yang terjadi ke optimasi @theme. */
 :root {
-  --color-primary:          var(--color-ocean-900);
-  --color-primary-hover:    var(--color-ocean-800);
-  --color-accent:           var(--color-sky-500);
-  --color-accent-hover:     var(--color-sky-400);
+  --color-primary:          var(--color-notion-500);
+  --color-primary-hover:    var(--color-notion-600);
+  --color-accent:           var(--color-notion-500);
+  --color-accent-hover:     var(--color-notion-600);
   --color-secondary:        var(--color-teal-600);
 
-  --color-surface:          #f0f9ff;
+  /* Permukaan lebih netral dan bersih ala Notion, tetap ada semburat
+     ocean tipis supaya identitasnya tidak hilang. */
+  --color-surface:          #f7f9fb;
   --color-surface-card:     #ffffff;
-  --color-surface-muted:    #f8fafc;
+  --color-surface-muted:    #f4f6f8;
 
-  --color-text-primary:     #0f172a;
-  --color-text-secondary:   #334155;
-  --color-text-muted:       #64748b;
+  --color-text-primary:     #1a2233;
+  --color-text-secondary:   #475467;
+  --color-text-muted:       #7a8699;
   --color-text-inverse:     #f8fafc;
 
-  --color-border:           #e2e8f0;
+  --color-border:           #e8ebef;
   --color-border-focus:     var(--color-accent);
 
   /* Risk Category Colors */
@@ -72,10 +83,11 @@
   --color-risk-worst:       #dc2626;
   --color-risk-worst-bg:    #fee2e2;
 
-  /* Border Radius */
-  --radius-card:        0.875rem;
-  --radius-card-pond:   34px 14px 14px 14px; /* Opsi D: siluet tepi kolam */
-  --radius-button:      0.5rem;
+  /* Border Radius. Ala Notion: simetris dan tenang, tidak ada lagi
+     siluet kolam asimetris yang bikin tampilan tidak konsisten. */
+  --radius-card:        12px;
+  --radius-card-pond:   12px; /* dipertahankan sebagai alias agar tidak breaking */
+  --radius-button:      8px;
 
   /* Role accent colors (semantic tokens, bukan hardcode per komponen) */
   --color-role-petambak:     #0284c7;
@@ -85,10 +97,11 @@
   --color-role-owner:        #0f766e;
   --color-role-owner-bg:     rgba(15,118,110,0.12);
 
-  /* Shadows */
-  --shadow-card:    0 1px 3px 0 rgb(11 45 78 / 0.08), 0 4px 16px -2px rgb(11 45 78 / 0.06);
-  --shadow-card-hover: 0 4px 12px 0 rgb(11 45 78 / 0.12), 0 8px 24px -4px rgb(11 45 78 / 0.10);
-  --shadow-dropdown: 0 8px 24px -4px rgb(11 45 78 / 0.15);
+  /* Shadows sangat halus ala Notion, mengandalkan border tipis bukan
+     bayangan tebal. */
+  --shadow-card:    0 1px 2px 0 rgb(16 24 40 / 0.04), 0 1px 3px 0 rgb(16 24 40 / 0.03);
+  --shadow-card-hover: 0 2px 8px -1px rgb(16 24 40 / 0.08), 0 4px 12px -2px rgb(16 24 40 / 0.06);
+  --shadow-dropdown: 0 4px 16px -2px rgb(16 24 40 / 0.12), 0 8px 24px -6px rgb(16 24 40 / 0.10);
 }
 
 /* ── Base Styles ──────────────────────────────────────────── */
@@ -123,19 +136,21 @@ body {
 }
 
 /* ── Utility Classes ──────────────────────────────────────── */
-/* Opsi D — siluet tepi kolam: satu sudut melengkung besar */
+/* Kartu bersih ala Notion: border tipis jadi pemisah utama, shadow
+   nyaris tak terlihat, radius simetris. */
 .card {
   background: var(--color-surface-card);
-  border-radius: var(--radius-card-pond);
+  border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
   border: 1px solid var(--color-border);
 }
 
 .card-hover {
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transition: box-shadow 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
 }
 .card-hover:hover {
   box-shadow: var(--shadow-card-hover);
+  border-color: var(--color-notion-100);
   transform: translateY(-1px);
 }
 
