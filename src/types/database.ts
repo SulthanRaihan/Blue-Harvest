@@ -86,6 +86,7 @@ export interface KualitasAir {
   do_ppm: number
   suhu_celsius: number
   salinitas_ppt: number
+  dicatat_oleh: string | null
 }
 
 export interface OperasionalHarian {
@@ -96,6 +97,7 @@ export interface OperasionalHarian {
   jenis_pakan: string
   catatan_hama_penyakit: string | null
   tindakan: string | null
+  dicatat_oleh: string | null
 }
 
 export interface BiayaOperasional {
@@ -215,13 +217,13 @@ export type Database = {
       }
       kualitas_air: {
         Row: KualitasAir
-        Insert: Omit<KualitasAir, 'id_kualitas'>
+        Insert: Omit<KualitasAir, 'id_kualitas' | 'dicatat_oleh'>   // dicatat_oleh = DEFAULT auth.uid()
         Update: Partial<Omit<KualitasAir, 'id_kualitas'>>
         Relationships: Rel[]
       }
       operasional_harian: {
         Row: OperasionalHarian
-        Insert: Omit<OperasionalHarian, 'id_operasional'>
+        Insert: Omit<OperasionalHarian, 'id_operasional' | 'dicatat_oleh'>   // dicatat_oleh = DEFAULT auth.uid()
         Update: Partial<Omit<OperasionalHarian, 'id_operasional'>>
         Relationships: Rel[]
       }

@@ -1,8 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { operasionalRepository } from '@/lib/repositories/operasional.repository'
-import { kualitasRepository } from '@/lib/repositories/kualitas.repository'
+import { operasionalRepository, type OperasionalWithPencatat } from '@/lib/repositories/operasional.repository'
+import { kualitasRepository, type KualitasWithPencatat } from '@/lib/repositories/kualitas.repository'
 import type { OperasionalHarian, KualitasAir, Komoditas } from '@/types/database'
 
 // ── Threshold check ───────────────────────────────────────────
@@ -40,7 +40,7 @@ export function checkKualitas(k: KualitasAir, komoditas?: Komoditas | null): Rec
 
 // ── useOperasional ────────────────────────────────────────────
 export function useOperasional(idRencana: string) {
-  const [entries, setEntries] = useState<OperasionalHarian[]>([])
+  const [entries, setEntries] = useState<OperasionalWithPencatat[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState<string | null>(null)
 
@@ -59,7 +59,7 @@ export function useOperasional(idRencana: string) {
 
   useEffect(() => { fetch() }, [fetch])
 
-  const add = async (entry: Omit<OperasionalHarian, 'id_operasional'>) => {
+  const add = async (entry: Omit<OperasionalHarian, 'id_operasional' | 'dicatat_oleh'>) => {
     const created = await operasionalRepository.create(entry)
     setEntries(prev => [created, ...prev])
     return created
@@ -75,7 +75,7 @@ export function useOperasional(idRencana: string) {
 
 // ── useKualitas ───────────────────────────────────────────────
 export function useKualitas(idKolam: string) {
-  const [entries, setEntries] = useState<KualitasAir[]>([])
+  const [entries, setEntries] = useState<KualitasWithPencatat[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState<string | null>(null)
 
@@ -95,7 +95,7 @@ export function useKualitas(idKolam: string) {
 
   useEffect(() => { fetch() }, [fetch])
 
-  const add = async (entry: Omit<KualitasAir, 'id_kualitas'>) => {
+  const add = async (entry: Omit<KualitasAir, 'id_kualitas' | 'dicatat_oleh'>) => {
     const created = await kualitasRepository.create(entry)
     setEntries(prev => [created, ...prev])
     return created
