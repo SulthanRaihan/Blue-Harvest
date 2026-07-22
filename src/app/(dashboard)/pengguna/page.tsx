@@ -8,7 +8,7 @@ import { usePengguna } from '@/hooks/usePengguna'
 import { useKolam } from '@/hooks/useKolam'
 import { useAuth } from '@/hooks/useAuth'
 import { Modal, Field, Input, Select, ModalActions } from '@/components/ui/Modal'
-import { RoleBadge, StatusBadge } from '@/components/ui/Badge'
+import { RoleBadge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useToast } from '@/components/ui/Toast'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
@@ -26,6 +26,16 @@ function EmptyState({ label }: { label: string }) {
         </svg>
       </div>
       <p className="text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{label}</p>
+    </div>
+  )
+}
+
+// ── Meta row untuk kartu kolam ────────────────────────────────
+function MetaRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3 text-xs">
+      <span style={{ color: 'var(--color-text-muted)' }}>{label}</span>
+      <span className="font-medium truncate text-right" style={{ color: 'var(--color-text-secondary)' }}>{value}</span>
     </div>
   )
 }
@@ -332,55 +342,66 @@ function TabKolam() {
       ) : kolam.length === 0 ? (
         <EmptyState label="Belum ada kolam terdaftar" />
       ) : (
-        <div className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
-          {kolam.map(k => (
-            <div key={k.id_kolam} className="flex items-center gap-4 px-5 py-3.5 transition-colors"
-              onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-surface-muted)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-            >
-              {/* Icon */}
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: 'var(--color-ocean-50)', color: 'var(--color-ocean-700)' }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M2 20c2-2 4-2 6 0s4 2 6 0 4-2 6 0M2 14c2-2 4-2 6 0s4 2 6 0 4-2 6 0M2 8c2-2 4-2 6 0s4 2 6 0 4-2 6 0" />
-                </svg>
-              </div>
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>{k.nama_kolam}</div>
-                <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-                  {k.luas_ha} ha
-                  {k.lokasi && ` · ${k.lokasi}`}
-                  {k.pengguna && ` · ${k.pengguna.nama}`}
+        <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4 p-5">
+          {kolam.map(k => {
+            const aktif = k.status === 'aktif'
+            return (
+              <div key={k.id_kolam} className="kolam-card card card-hover overflow-hidden flex flex-col">
+                {/* Header dengan aksen air */}
+                <div className="relative px-4 pt-4 pb-3" style={{ background: aktif ? 'linear-gradient(135deg, var(--color-ocean-800), var(--color-ocean-600))' : 'var(--color-surface-muted)' }}>
+                  <div className="flex items-start justify-between">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                      style={{ background: aktif ? 'rgba(255,255,255,0.15)' : 'var(--color-ocean-50)', color: aktif ? '#fff' : 'var(--color-ocean-600)' }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M2 20c2-2 4-2 6 0s4 2 6 0 4-2 6 0M2 14c2-2 4-2 6 0s4 2 6 0 4-2 6 0M2 8c2-2 4-2 6 0s4 2 6 0 4-2 6 0" />
+                      </svg>
+                    </div>
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                      style={{
+                        background: aktif ? 'rgba(255,255,255,0.18)' : 'var(--color-border)',
+                        color: aktif ? '#fff' : 'var(--color-text-muted)',
+                      }}>
+                      {aktif ? 'Aktif' : 'Nonaktif'}
+                    </span>
+                  </div>
+                  <div className="mt-2.5 text-base font-bold truncate" style={{ color: aktif ? '#fff' : 'var(--color-text-primary)' }}>
+                    {k.nama_kolam}
+                  </div>
+                </div>
+
+                {/* Meta */}
+                <div className="px-4 py-3 flex flex-col gap-1.5 flex-1">
+                  <MetaRow label="Luas" value={`${k.luas_ha} ha`} />
+                  {k.lokasi && <MetaRow label="Lokasi" value={k.lokasi} />}
+                  {k.pengguna && <MetaRow label="Petambak" value={k.pengguna.nama} />}
+                </div>
+
+                {/* Actions */}
+                <div className="px-4 py-3 flex items-center gap-2" style={{ borderTop: '1px solid var(--color-border)' }}>
+                  <Link href={`/kolam/${k.id_kolam}`}
+                    className="flex-1 text-center px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+                    style={{ background: 'var(--color-notion-50)', color: 'var(--color-notion-600)', textDecoration: 'none' }}
+                  >Detail</Link>
+                  <button onClick={() => openEdit(k)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                    style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-surface-muted)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                  >Edit</button>
+                  <button
+                    onClick={() => handleToggle(k.id_kolam, k.status, k.nama_kolam)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                    style={{
+                      color: aktif ? 'var(--color-risk-worst)' : 'var(--color-risk-best)',
+                      background: aktif ? 'var(--color-risk-worst-bg)' : 'var(--color-risk-best-bg)',
+                    }}
+                  >
+                    {aktif ? 'Nonaktifkan' : 'Aktifkan'}
+                  </button>
                 </div>
               </div>
-              <StatusBadge status={k.status} />
-              {/* Actions */}
-              <div className="flex items-center gap-1.5">
-                <Link href={`/kolam/${k.id_kolam}`}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-                  style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)', textDecoration: 'none' }}
-                >Detail</Link>
-                <button onClick={() => openEdit(k)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-                  style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-surface-muted)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                >Edit</button>
-                <button
-                  onClick={() => handleToggle(k.id_kolam, k.status, k.nama_kolam)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-                  style={{
-                    border: `1px solid ${k.status === 'aktif' ? '#fca5a5' : 'var(--color-border)'}`,
-                    color: k.status === 'aktif' ? 'var(--color-risk-worst)' : 'var(--color-risk-best)',
-                    background: k.status === 'aktif' ? 'var(--color-risk-worst-bg)' : 'var(--color-risk-best-bg)',
-                  }}
-                >
-                  {k.status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan'}
-                </button>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
