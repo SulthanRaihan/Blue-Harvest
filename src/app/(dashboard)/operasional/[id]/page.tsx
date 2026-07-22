@@ -7,6 +7,7 @@ import { gsap } from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { useRencanaDetail } from '@/hooks/useRencana'
 import { useOperasional, useKualitas, checkKualitas } from '@/hooks/useOperasional'
+import type { OperasionalWithPencatat } from '@/lib/repositories/operasional.repository'
 import { useBiaya, KATEGORI_BIAYA_LABEL } from '@/hooks/useBiaya'
 import { Modal, Field, Input, Select, ModalActions } from '@/components/ui/Modal'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -122,11 +123,9 @@ function TabPakan({ idRencana }: { idRencana: string }) {
       {loading ? <RowSkeleton /> : error ? (
         <div className="px-5 py-4 text-sm" style={{ color: 'var(--color-risk-worst)' }}>{error}</div>
       ) : entries.length === 0 ? (
-        <EmptyLog label="Belum ada log pakan — tambahkan entri harian pertama" />
+        <EmptyLog label="Belum ada log pakan. Tambahkan entri harian pertama." />
       ) : (
-        <div className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
-          {entries.map(e => <PakanRow key={e.id_operasional} entry={e} />)}
-        </div>
+        <LogbookPakan entries={entries} />
       )}
 
       <Modal open={open} onClose={() => setOpen(false)} title="Tambah Log Harian">
@@ -300,44 +299,80 @@ function TabBiaya({ idRencana }: { idRencana: string }) {
   )
 }
 
-function PakanRow({ entry }: { entry: OperasionalHarian }) {
-  const hasAlert = !!entry.catatan_hama_penyakit
+// ── Logbook Pakan (tabel ala referensi) ────────────────────────
+// Tiap baris punya strip prioritas di tepi kiri: merah kalau ada
+// catatan hama/penyakit (perlu perhatian), hijau kalau normal.
+// Kolom USER menampilkan siapa yang mencatat.
+function initials(nama: string) {
+  return nama.slice(0, 2).toUpperCase()
+}
+
+function LogbookPakan({ entries }: { entries: OperasionalWithPencatat[] }) {
   return (
-    <div className="flex items-start gap-4 px-5 py-4 transition-colors"
-      onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-surface-muted)')}
-      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-      {/* Icon */}
-      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
-        style={{ background: hasAlert ? 'var(--color-risk-worst-bg)' : 'var(--color-ocean-50)', color: hasAlert ? 'var(--color-risk-worst)' : 'var(--color-ocean-600)' }}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-          {hasAlert
-            ? <><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></>
-            : <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>
-          }
-        </svg>
+    <div>
+      <div className="overflow-x-auto">
+        <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 620 }}>
+          <thead>
+            <tr style={{ background: 'var(--color-surface-muted)' }}>
+              <th style={{ width: 4, padding: 0, borderBottom: '1px solid var(--color-border)' }} />
+              <th className="text-left text-xs font-semibold uppercase tracking-wide px-4 py-2.5" style={{ color: 'var(--color-text-muted)', borderBottom: '1px solid var(--color-border)', whiteSpace: 'nowrap' }}>Tanggal</th>
+              <th className="text-left text-xs font-semibold uppercase tracking-wide px-4 py-2.5" style={{ color: 'var(--color-text-muted)', borderBottom: '1px solid var(--color-border)', whiteSpace: 'nowrap' }}>Pakan</th>
+              <th className="text-left text-xs font-semibold uppercase tracking-wide px-4 py-2.5" style={{ color: 'var(--color-text-muted)', borderBottom: '1px solid var(--color-border)' }}>Catatan</th>
+              <th className="text-left text-xs font-semibold uppercase tracking-wide px-4 py-2.5" style={{ color: 'var(--color-text-muted)', borderBottom: '1px solid var(--color-border)', whiteSpace: 'nowrap' }}>Pencatat</th>
+            </tr>
+          </thead>
+          <tbody>
+            {entries.map(entry => {
+              const hasAlert = !!entry.catatan_hama_penyakit
+              const nama = entry.pencatat?.nama ?? null
+              return (
+                <tr key={entry.id_operasional} className="transition-colors"
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-surface-muted)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                  {/* Strip prioritas */}
+                  <td style={{ padding: 0, borderBottom: '1px solid var(--color-border)' }}>
+                    <div style={{ width: 4, height: '100%', minHeight: 44, background: hasAlert ? 'var(--color-risk-worst)' : 'var(--color-risk-best)' }} />
+                  </td>
+                  <td className="px-4 py-3 text-sm" style={{ color: 'var(--color-text-primary)', borderBottom: '1px solid var(--color-border)', whiteSpace: 'nowrap' }}>
+                    {formatTanggal(entry.tanggal)}
+                  </td>
+                  <td className="px-4 py-3" style={{ borderBottom: '1px solid var(--color-border)', whiteSpace: 'nowrap' }}>
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: 'var(--color-ocean-50)', color: 'var(--color-ocean-700)' }}>
+                      {entry.jumlah_pakan_kg} kg · {entry.jenis_pakan}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                    {hasAlert ? (
+                      <div>
+                        <div style={{ color: 'var(--color-risk-worst)' }}>{entry.catatan_hama_penyakit}</div>
+                        {entry.tindakan && <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>Tindakan: {entry.tindakan}</div>}
+                      </div>
+                    ) : (
+                      <span className="text-xs font-medium" style={{ color: 'var(--color-risk-best)' }}>Normal</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3" style={{ borderBottom: '1px solid var(--color-border)', whiteSpace: 'nowrap' }}>
+                    {nama ? (
+                      <div className="flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ background: 'var(--color-ocean-100)', color: 'var(--color-ocean-800)' }}>
+                          {initials(nama)}
+                        </span>
+                        <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{nama}</span>
+                      </div>
+                    ) : (
+                      <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>—</span>
+                    )}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
       </div>
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-            {formatTanggal(entry.tanggal)}
-          </span>
-          <span className="text-xs px-2 py-0.5 rounded-full"
-            style={{ background: 'var(--color-ocean-50)', color: 'var(--color-ocean-700)' }}>
-            {entry.jumlah_pakan_kg} kg · {entry.jenis_pakan}
-          </span>
-        </div>
-        {entry.catatan_hama_penyakit && (
-          <p className="text-xs mt-1" style={{ color: 'var(--color-risk-worst)' }}>
-            Hama: {entry.catatan_hama_penyakit}
-          </p>
-        )}
-        {entry.tindakan && (
-          <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-            Tindakan: {entry.tindakan}
-          </p>
-        )}
+      {/* Legenda prioritas */}
+      <div className="flex items-center gap-4 px-5 py-3 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+        <span className="flex items-center gap-1.5"><span style={{ width: 10, height: 4, borderRadius: 2, background: 'var(--color-risk-best)', display: 'inline-block' }} />Normal</span>
+        <span className="flex items-center gap-1.5"><span style={{ width: 10, height: 4, borderRadius: 2, background: 'var(--color-risk-worst)', display: 'inline-block' }} />Perlu perhatian</span>
       </div>
     </div>
   )
