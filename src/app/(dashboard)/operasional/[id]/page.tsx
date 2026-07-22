@@ -114,7 +114,7 @@ function TabPakan({ idRencana }: { idRencana: string }) {
         </p>
         <button onClick={() => { setFormErr(null); setOpen(true) }}
           className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold"
-          style={{ background: 'var(--color-ocean-900)', color: '#fff' }}>
+          style={{ background: 'var(--color-notion-500)', color: '#fff' }}>
           <span className="text-base leading-none">+</span> Tambah Log
         </button>
       </div>
@@ -224,7 +224,7 @@ function TabBiaya({ idRencana }: { idRencana: string }) {
         </p>
         <button onClick={() => { setFormErr(null); setOpen(true) }}
           className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold"
-          style={{ background: 'var(--color-ocean-900)', color: '#fff' }}>
+          style={{ background: 'var(--color-notion-500)', color: '#fff' }}>
           <span className="text-base leading-none">+</span> Catat Biaya
         </button>
       </div>
@@ -392,7 +392,7 @@ function TabKualitas({ idKolam, komoditas }: {
         </p>
         <button onClick={() => { setFormErr(null); setOpen(true) }}
           className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold"
-          style={{ background: 'var(--color-ocean-900)', color: '#fff' }}>
+          style={{ background: 'var(--color-notion-500)', color: '#fff' }}>
           <span className="text-base leading-none">+</span> Catat Kualitas
         </button>
       </div>

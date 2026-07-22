@@ -536,7 +536,7 @@ export default function RencanaDetailPage() {
                 onClick={submit}
                 disabled={saving}
                 className="w-full py-3.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-60"
-                style={{ background: 'var(--color-ocean-900)', color: '#fff', boxShadow: '0 4px 16px rgba(11,45,78,0.25)' }}>
+                style={{ background: 'var(--color-notion-500)', color: '#fff', boxShadow: '0 4px 16px rgba(11,45,78,0.25)' }}>
                 {saving ? 'Menyimpan...' : `Simpan Skoring — ${KATEGORI_LABEL[liveKategori]} (${liveTotal})`}
               </button>
               <p className="text-xs text-center mt-2" style={{ color: 'var(--color-text-muted)' }}>
@@ -585,7 +585,7 @@ export default function RencanaDetailPage() {
           <button
             onClick={() => updateStatus('aktif')}
             className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all"
-            style={{ background: 'var(--color-ocean-900)', color: '#fff' }}>
+            style={{ background: 'var(--color-notion-500)', color: '#fff' }}>
             Aktifkan Siklus Budidaya
           </button>
         </div>

@@ -128,7 +128,7 @@ export default function SamplingDetailPage() {
           </div>
           <button onClick={() => { setFormErr(null); setOpen(true) }}
             className="shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold"
-            style={{ background: 'var(--color-ocean-900)', color: '#fff' }}>
+            style={{ background: 'var(--color-notion-500)', color: '#fff' }}>
             <span className="text-base leading-none">+</span> Sampling
           </button>
         </div>

@@ -101,7 +101,7 @@ function KomoditasCard({ komoditas, onSave }: { komoditas: Komoditas; onSave: (u
         </div>
         <button onClick={openEdit}
           className="text-xs font-semibold px-3 py-1.5 rounded-lg shrink-0"
-          style={{ background: 'var(--color-ocean-900)', color: '#fff' }}>
+          style={{ background: 'var(--color-notion-500)', color: '#fff' }}>
           Edit
         </button>
       </div>

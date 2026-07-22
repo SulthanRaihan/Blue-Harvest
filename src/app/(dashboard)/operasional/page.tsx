@@ -46,7 +46,7 @@ function EmptyState() {
       </div>
       <Link href="/perencanaan"
         className="px-4 py-2 rounded-lg text-sm font-semibold"
-        style={{ background: 'var(--color-ocean-900)', color: '#fff' }}>
+        style={{ background: 'var(--color-notion-500)', color: '#fff' }}>
         Ke Perencanaan
       </Link>
     </div>

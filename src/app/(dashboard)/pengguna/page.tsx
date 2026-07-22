@@ -116,7 +116,7 @@ function TabPengguna() {
         <button
           onClick={() => { setFormError(null); setAddOpen(true) }}
           className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all"
-          style={{ background: 'var(--color-ocean-900)', color: '#fff', boxShadow: '0 2px 8px rgba(11,45,78,0.25)' }}
+          style={{ background: 'var(--color-notion-500)', color: '#fff', boxShadow: '0 2px 8px rgba(11,45,78,0.25)' }}
         >
           <span className="text-base leading-none">+</span> Tambah Pengguna
         </button>
@@ -312,7 +312,7 @@ function TabKolam() {
         <button
           onClick={openAdd}
           className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all"
-          style={{ background: 'var(--color-ocean-900)', color: '#fff', boxShadow: '0 2px 8px rgba(11,45,78,0.25)' }}
+          style={{ background: 'var(--color-notion-500)', color: '#fff', boxShadow: '0 2px 8px rgba(11,45,78,0.25)' }}
         >
           <span className="text-base leading-none">+</span> Tambah Kolam
         </button>

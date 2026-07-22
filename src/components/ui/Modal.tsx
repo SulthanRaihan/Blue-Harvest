@@ -207,12 +207,12 @@ export function ModalActions({ onCancel, onConfirm, confirmLabel = 'Simpan', loa
         disabled={loading}
         className="px-4 py-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-50 disabled:pointer-events-none"
         style={{
-          background: danger ? 'var(--color-risk-worst)' : 'var(--color-ocean-900)',
+          background: danger ? 'var(--color-risk-worst)' : 'var(--color-notion-500)',
           color: '#fff',
-          boxShadow: danger ? '0 2px 8px rgba(220,38,38,0.3)' : '0 2px 8px rgba(11,45,78,0.3)',
+          boxShadow: danger ? '0 2px 8px rgba(220,38,38,0.25)' : '0 1px 2px rgba(16,24,40,0.08)',
         }}
-        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = danger ? '0 4px 14px rgba(220,38,38,0.4)' : '0 4px 14px rgba(11,45,78,0.4)' }}
-        onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = danger ? '0 2px 8px rgba(220,38,38,0.3)' : '0 2px 8px rgba(11,45,78,0.3)' }}
+        onMouseEnter={e => { e.currentTarget.style.background = danger ? '#b91c1c' : 'var(--color-notion-600)' }}
+        onMouseLeave={e => { e.currentTarget.style.background = danger ? 'var(--color-risk-worst)' : 'var(--color-notion-500)' }}
       >
         {loading ? 'Menyimpan...' : confirmLabel}
       </button>

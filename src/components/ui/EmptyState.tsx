@@ -57,10 +57,10 @@ export function EmptyState({ judul, deskripsi, aksi, icon, compact }: EmptyState
       {aksi && (
         <Link
           href={aksi.href}
-          className="empty-item inline-flex items-center gap-1.5 mt-4 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
-          style={{ background: 'var(--color-ocean-900)', color: '#fff', boxShadow: '0 2px 8px rgba(11,45,78,0.25)' }}
-          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(11,45,78,0.35)' }}
-          onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(11,45,78,0.25)' }}
+          className="empty-item inline-flex items-center gap-1.5 mt-4 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+          style={{ background: 'var(--color-notion-500)', color: '#fff', boxShadow: '0 1px 2px rgba(16,24,40,0.08)' }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-notion-600)' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-notion-500)' }}
         >
           {aksi.label}
           <IconChevronRight size={14} />

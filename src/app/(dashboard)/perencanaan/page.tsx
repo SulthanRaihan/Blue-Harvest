@@ -65,7 +65,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
       </div>
       <button onClick={onAdd}
         className="px-4 py-2 rounded-lg text-sm font-semibold transition-all"
-        style={{ background: 'var(--color-ocean-900)', color: '#fff' }}>
+        style={{ background: 'var(--color-notion-500)', color: '#fff' }}>
         Buat Rencana Sekarang
       </button>
     </div>
@@ -227,7 +227,7 @@ export default function PerencanaanPage() {
           <button
             onClick={() => { setFormError(null); setOpen(true) }}
             className="shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
-            style={{ background: 'var(--color-ocean-900)', color: '#fff', boxShadow: '0 2px 10px rgba(11,45,78,0.25)' }}>
+            style={{ background: 'var(--color-notion-500)', color: '#fff', boxShadow: '0 2px 10px rgba(11,45,78,0.25)' }}>
             <span className="text-base leading-none">+</span> Buat Rencana
           </button>
         )}

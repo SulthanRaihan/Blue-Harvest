@@ -45,7 +45,7 @@ export default function SamplingPage() {
           <p className="text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>Tidak ada siklus aktif</p>
           <Link href="/perencanaan"
             className="text-xs px-3 py-1.5 rounded-lg"
-            style={{ background: 'var(--color-ocean-900)', color: '#fff' }}>
+            style={{ background: 'var(--color-notion-500)', color: '#fff' }}>
             Ke Perencanaan
           </Link>
         </div>

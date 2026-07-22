@@ -110,7 +110,7 @@ export default function RegisterPage() {
             <Link
               href="/login"
               className="block w-full py-3 rounded-xl text-sm font-semibold text-center transition-all"
-              style={{ background: 'var(--color-ocean-900)', color: '#fff' }}
+              style={{ background: 'var(--color-notion-500)', color: '#fff' }}
             >
               Kembali ke Login
             </Link>

@@ -138,7 +138,7 @@ export default function ProfilPage() {
             onClick={handleChangePassword}
             disabled={saving || !newPass || !confirmPass}
             className="self-start px-4 py-2.5 rounded-lg text-sm font-semibold transition-all disabled:opacity-50"
-            style={{ background: 'var(--color-ocean-900)', color: '#fff', boxShadow: '0 2px 8px rgba(11,45,78,0.25)' }}
+            style={{ background: 'var(--color-notion-500)', color: '#fff', boxShadow: '0 2px 8px rgba(11,45,78,0.25)' }}
           >
             {saving ? 'Menyimpan...' : 'Perbarui Password'}
           </button>
