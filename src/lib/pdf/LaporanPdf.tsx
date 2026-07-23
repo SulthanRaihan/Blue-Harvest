@@ -209,6 +209,18 @@ export function LaporanPdfDocument({ data, biayaBreakdown, biayaTotal, insightPe
           </View>
         )}
 
+        {/* Dokumentasi foto panen */}
+        {panen.some(p => p.foto_url) && (
+          <View wrap={false}>
+            <Text style={styles.sectionTitle}>Dokumentasi Panen</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+              {panen.filter(p => p.foto_url).map(p => (
+                <Image key={p.id_panen} src={p.foto_url as string} style={{ width: 120, height: 90, borderRadius: 4, objectFit: 'cover', border: `0.5pt solid ${BORDER}` }} />
+              ))}
+            </View>
+          </View>
+        )}
+
         {/* Pertumbuhan */}
         {sampling.length > 0 && (
           <View>
