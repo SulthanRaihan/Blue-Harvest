@@ -136,14 +136,14 @@ function InsightBox({ insight }: { insight: { ringkasan: string; rekomendasi: st
 
 // ── Faktor card (input) ────────────────────────────────────────
 function FaktorInputCard({
-  faktor, nilai_potensi, nilai_dampak, skor_hasil, onSet, alasan,
+  faktor, nilai_potensi, nilai_dampak, skor_hasil, onSet, saran,
 }: {
   faktor: { id_faktor: string; nama_faktor: string; deskripsi: string }
   nilai_potensi: number
   nilai_dampak: number
   skor_hasil: number
   onSet: (field: 'nilai_potensi' | 'nilai_dampak', val: number) => void
-  alasan?: string
+  saran?: { potensi: number; dampak: number; alasan: string }
 }) {
   const meta = FAKTOR_META[faktor.nama_faktor as NamaFaktor] ?? { label: faktor.nama_faktor, desc: faktor.deskripsi }
 
@@ -206,16 +206,24 @@ function FaktorInputCard({
           <span className="font-bold" style={{ color: 'var(--color-ocean-700)' }}>{skor_hasil}</span>
         </div>
 
-        {/* AI alasan hint */}
-        {alasan && (
-          <div className="flex items-start gap-2 mt-2 pt-2 text-xs rounded-lg px-3 py-2"
+        {/* Saran AI sebagai referensi — TIDAK mengisi nilai otomatis */}
+        {saran && (
+          <div className="mt-2 pt-2 text-xs rounded-lg px-3 py-2.5"
             style={{ background: 'var(--color-ocean-50)', borderLeft: '3px solid var(--color-ocean-300)' }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5"
-              style={{ color: 'var(--color-ocean-500)' }}>
-              <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
-            </svg>
-            <span style={{ color: 'var(--color-ocean-700)' }}>{alasan}</span>
+            <div className="flex items-center gap-1.5 mb-1">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"
+                style={{ color: 'var(--color-ocean-500)' }}>
+                <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
+              </svg>
+              <span className="font-semibold" style={{ color: 'var(--color-ocean-700)' }}>
+                Pertimbangan AI: Potensi {saran.potensi}, Dampak {saran.dampak}
+              </span>
+            </div>
+            <p className="leading-relaxed" style={{ color: 'var(--color-ocean-700)' }}>{saran.alasan}</p>
+            <p className="mt-1.5 italic" style={{ color: 'var(--color-ocean-500)' }}>
+              Ini hanya referensi. Nilai akhir tetap Anda tentukan sesuai kondisi kolam.
+            </p>
           </div>
         )}
       </div>
@@ -292,8 +300,13 @@ export default function RencanaDetailPage() {
   }, [result])
 
   // ── AI scoring suggestion ─────────────────────────────────────
+  // Saran AI ditampilkan sebagai REFERENSI saja, tidak mengisi nilai
+  // secara otomatis. Petambak yang menilai sendiri berdasarkan kondisi
+  // lapangan; AI cuma memberi pertimbangan yang bisa dibaca. Ini
+  // menghindari anchoring bias dan menjaga penilaian tetap milik manusia.
+  type SaranFaktor = { potensi: number; dampak: number; alasan: string }
   const [aiLoading, setAiLoading] = useState(false)
-  const [aiSaran, setAiSaran]     = useState<Record<string, string>>({}) // nama_faktor → alasan
+  const [aiSaran, setAiSaran]     = useState<Record<string, SaranFaktor>>({}) // nama_faktor → saran
   const [aiError, setAiError]     = useState<string | null>(null)
 
   async function handleAiSuggest() {
@@ -317,17 +330,11 @@ export default function RencanaDetailPage() {
         throw new Error(err.error ?? 'Gagal terhubung ke AI')
       }
       const data = await res.json()
-      // Pre-fill nilai for each faktor
+      // Simpan saran sebagai referensi (tidak mengisi nilai otomatis)
+      const saran: Record<string, SaranFaktor> = {}
       data.saran?.forEach((s: { nama_faktor: string; nilai_potensi: number; nilai_dampak: number; alasan: string }) => {
-        const match = faktor.find(f => f.nama_faktor === s.nama_faktor)
-        if (match) {
-          setNilai(match.id_faktor, 'nilai_potensi', s.nilai_potensi)
-          setNilai(match.id_faktor, 'nilai_dampak',  s.nilai_dampak)
-        }
+        saran[s.nama_faktor] = { potensi: s.nilai_potensi, dampak: s.nilai_dampak, alasan: s.alasan }
       })
-      // Store alasan per faktor
-      const saran: Record<string, string> = {}
-      data.saran?.forEach((s: { nama_faktor: string; alasan: string }) => { saran[s.nama_faktor] = s.alasan })
       setAiSaran(saran)
     } catch (e) {
       setAiError(e instanceof Error ? e.message : 'Terjadi kesalahan')
@@ -462,7 +469,7 @@ export default function RencanaDetailPage() {
               </span>
             </div>
             <p className="text-xs mb-3" style={{ color: 'var(--color-text-muted)' }}>
-              Nilai Potensi = seberapa besar kemungkinan terjadi (1–5). Nilai Dampak = seberapa besar pengaruhnya (1–5). Skor = Potensi × Dampak.
+              Nilai Potensi = seberapa besar kemungkinan terjadi (1 sampai 5). Nilai Dampak = seberapa besar pengaruhnya (1 sampai 5). Skor = Potensi × Dampak. Anda yang menilai berdasarkan kondisi kolam; AI hanya memberi pertimbangan.
             </p>
 
             {/* AI suggest button */}
@@ -488,7 +495,7 @@ export default function RencanaDetailPage() {
                     <path d="M12 8v4l3 3"/>
                     <circle cx="18" cy="5" r="3"/>
                   </svg>
-                  Bantu Isi dengan AI
+                  Lihat Pertimbangan AI
                 </>
               )}
             </button>
@@ -519,7 +526,7 @@ export default function RencanaDetailPage() {
                   nilai_dampak={d.nilai_dampak}
                   skor_hasil={d.skor_hasil}
                   onSet={(field, val) => setNilai(d.id_faktor, field, val)}
-                  alasan={aiSaran[d.nama_faktor]}
+                  saran={aiSaran[d.nama_faktor]}
                 />
               ))
             )}
