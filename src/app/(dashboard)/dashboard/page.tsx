@@ -338,7 +338,7 @@ function OwnerDashboard({ nama, data, loading }: { nama: string; data: Dashboard
     roiPerKategori,
     komoditasBreakdown: data.komoditasBreakdown.map(k => ({ komoditas: k.komoditas, jumlah: k.jumlah })),
   }
-  const { insight, loading: loadingInsight, error: insightError } = useDashboardInsight(insightPayload)
+  const { insight, loading: loadingInsight, error: insightError, updatedAt: insightUpdatedAt } = useDashboardInsight(insightPayload)
 
   return (
     <>
@@ -401,7 +401,7 @@ function OwnerDashboard({ nama, data, loading }: { nama: string; data: Dashboard
         </div>
 
         <div className="flex flex-col gap-4">
-          <InsightCard insight={insight} error={insightError} loading={loadingInsight || !insightPayload} />
+          <InsightCard insight={insight} error={insightError} loading={loadingInsight || !insightPayload} updatedAt={insightUpdatedAt} />
           <RiskHealthCard risikoBreakdown={data.risikoBreakdown} roiPerKategori={roiPerKategori} loading={loading || loadingRoi} />
           <SystemSummary data={data} loading={loading} />
         </div>
@@ -411,7 +411,10 @@ function OwnerDashboard({ nama, data, loading }: { nama: string; data: Dashboard
 }
 
 // ── Groq Insight card ──────────────────────────────────────────
-function InsightCard({ insight, error, loading }: { insight: string | null; error?: string | null; loading: boolean }) {
+function InsightCard({ insight, error, loading, updatedAt }: { insight: string | null; error?: string | null; loading: boolean; updatedAt?: string | null }) {
+  const jamUpdate = updatedAt
+    ? new Date(updatedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+    : null
   return (
     <div className="card p-4" style={{ background: 'linear-gradient(160deg, var(--color-ocean-950), var(--color-ocean-800))' }}>
       <div className="flex items-center gap-1.5 mb-2.5">
@@ -428,9 +431,14 @@ function InsightCard({ insight, error, loading }: { insight: string | null; erro
           Insight AI sedang tidak tersedia ({error}). Data chart di atas tetap akurat, hanya ringkasan naratifnya yang gagal dimuat.
         </p>
       ) : (
-        <p className="text-sm leading-relaxed" style={{ color: '#e2e8f0' }}>
-          {insight ?? 'Belum cukup data untuk menghasilkan insight.'}
-        </p>
+        <>
+          <p className="text-sm leading-relaxed" style={{ color: '#e2e8f0' }}>
+            {insight ?? 'Belum cukup data untuk menghasilkan insight.'}
+          </p>
+          {jamUpdate && insight && (
+            <p className="text-xs mt-2.5" style={{ color: 'var(--color-ocean-400)' }}>Diperbarui hari ini · {jamUpdate}</p>
+          )}
+        </>
       )}
     </div>
   )
