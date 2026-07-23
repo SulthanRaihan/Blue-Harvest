@@ -14,7 +14,7 @@ export const rencanaRepository = {
   async getById(id: string): Promise<RencanaTebar | null> {
     const { data, error } = await supabase
       .from('rencana_tebar')
-      .select('*, kolam(*), komoditas(*), skoring_risiko(*, detail_skoring(*, faktor_risiko(*)))')
+      .select('*, kolam(*, pengguna(nama)), komoditas(*), skoring_risiko(*, detail_skoring(*, faktor_risiko(*)))')
       .eq('id_rencana', id)
       .single()
     if (error) throw error

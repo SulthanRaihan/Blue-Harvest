@@ -8,10 +8,11 @@ import { useGSAP } from '@gsap/react'
 import { useRencanaDetail } from '@/hooks/useRencana'
 import { useOperasional, useKualitas, checkKualitas } from '@/hooks/useOperasional'
 import type { OperasionalWithPencatat } from '@/lib/repositories/operasional.repository'
+import type { KualitasWithPencatat } from '@/lib/repositories/kualitas.repository'
 import { useBiaya, KATEGORI_BIAYA_LABEL } from '@/hooks/useBiaya'
 import { Modal, Field, Input, Select, ModalActions } from '@/components/ui/Modal'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { WaterQualityBar, CategoryDonut, CATEGORY_DONUT_COLORS } from '@/components/ui/Charts'
+import { CategoryDonut, CATEGORY_DONUT_COLORS } from '@/components/ui/Charts'
 import { useToast } from '@/components/ui/Toast'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { InfoHint } from '@/components/ui/InfoHint'
@@ -71,7 +72,7 @@ function RowSkeleton({ rows = 3 }: { rows?: number }) {
 // ════════════════════════════════════════════════════════════
 // TAB: PAKAN & CATATAN
 // ════════════════════════════════════════════════════════════
-function TabPakan({ idRencana }: { idRencana: string }) {
+function TabPakan({ idRencana, pemilikNama }: { idRencana: string; pemilikNama: string | null }) {
   const { entries, loading, error, add } = useOperasional(idRencana)
   const toast = useToast()
   const [open, setOpen]     = useState(false)
@@ -125,7 +126,7 @@ function TabPakan({ idRencana }: { idRencana: string }) {
       ) : entries.length === 0 ? (
         <EmptyLog label="Belum ada log pakan. Tambahkan entri harian pertama." />
       ) : (
-        <LogbookPakan entries={entries} />
+        <LogbookPakan entries={entries} pemilikNama={pemilikNama} />
       )}
 
       <Modal open={open} onClose={() => setOpen(false)} title="Tambah Log Harian">
@@ -307,7 +308,7 @@ function initials(nama: string) {
   return nama.slice(0, 2).toUpperCase()
 }
 
-function LogbookPakan({ entries }: { entries: OperasionalWithPencatat[] }) {
+function LogbookPakan({ entries, pemilikNama }: { entries: OperasionalWithPencatat[]; pemilikNama: string | null }) {
   return (
     <div>
       <div className="overflow-x-auto">
@@ -324,7 +325,7 @@ function LogbookPakan({ entries }: { entries: OperasionalWithPencatat[] }) {
           <tbody>
             {entries.map(entry => {
               const hasAlert = !!entry.catatan_hama_penyakit
-              const nama = entry.pencatat?.nama ?? null
+              const nama = entry.pencatat?.nama ?? pemilikNama
               return (
                 <tr key={entry.id_operasional} className="transition-colors"
                   onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-surface-muted)')}
@@ -381,9 +382,10 @@ function LogbookPakan({ entries }: { entries: OperasionalWithPencatat[] }) {
 // ════════════════════════════════════════════════════════════
 // TAB: KUALITAS AIR
 // ════════════════════════════════════════════════════════════
-function TabKualitas({ idKolam, komoditas }: {
+function TabKualitas({ idKolam, komoditas, pemilikNama }: {
   idKolam: string
   komoditas: { target_ph_min: number; target_ph_max: number; target_suhu_min: number; target_suhu_max: number; target_do_min: number; target_salinitas_min: number; target_salinitas_max: number } | null
+  pemilikNama: string | null
 }) {
   const { entries, loading, error, add } = useKualitas(idKolam)
   const toast = useToast()
@@ -446,11 +448,9 @@ function TabKualitas({ idKolam, komoditas }: {
       {loading ? <RowSkeleton /> : error ? (
         <div className="px-5 py-4 text-sm" style={{ color: 'var(--color-risk-worst)' }}>{error}</div>
       ) : entries.length === 0 ? (
-        <EmptyLog label="Belum ada pengukuran kualitas air" />
+        <EmptyLog label="Belum ada pengukuran kualitas air." />
       ) : (
-        <div className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
-          {entries.map(e => <KualitasRow key={e.id_kualitas} entry={e} komoditas={komoditas} />)}
-        </div>
+        <LogbookKualitas entries={entries} komoditas={komoditas} pemilikNama={pemilikNama} />
       )}
 
       <Modal open={open} onClose={() => setOpen(false)} title="Catat Kualitas Air"
@@ -483,47 +483,72 @@ function TabKualitas({ idKolam, komoditas }: {
   )
 }
 
-function KualitasRow({ entry, komoditas }: { entry: KualitasAir; komoditas: any }) {
-  const status = checkKualitas(entry, komoditas)
-  const allOk  = Object.values(status).every(s => s.ok)
-  const hasTarget = !!komoditas
-
+// ── Logbook Kualitas Air (tabel) ───────────────────────────────
+// Nilai tiap parameter diberi warna: merah kalau di luar batas
+// aman, hijau kalau normal. Strip prioritas di tepi kiri sama seperti
+// logbook pakan.
+function ParamCell({ value, unit, ok }: { value: number; unit: string; ok: boolean }) {
   return (
-    <div className="px-5 py-4 transition-colors"
-      onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-surface-muted)')}
-      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-          {formatTanggal(entry.tanggal)}
-        </span>
-        <span className="flex items-center gap-1.5 text-xs font-medium"
-          style={{ color: allOk ? 'var(--color-risk-best)' : 'var(--color-risk-worst)' }}>
-          <StatusDot ok={allOk} />
-          {allOk ? 'Normal' : 'Ada Anomali'}
-        </span>
+    <td className="px-4 py-3 text-sm font-semibold" style={{ borderBottom: '1px solid var(--color-border)', whiteSpace: 'nowrap', color: ok ? 'var(--color-text-primary)' : 'var(--color-risk-worst)' }}>
+      {value}{unit}
+    </td>
+  )
+}
+
+function LogbookKualitas({ entries, komoditas, pemilikNama }: { entries: KualitasWithPencatat[]; komoditas: any; pemilikNama: string | null }) {
+  const th = (label: string, nowrap = true) => (
+    <th className="text-left text-xs font-semibold uppercase tracking-wide px-4 py-2.5" style={{ color: 'var(--color-text-muted)', borderBottom: '1px solid var(--color-border)', whiteSpace: nowrap ? 'nowrap' : undefined }}>{label}</th>
+  )
+  return (
+    <div>
+      <div className="overflow-x-auto">
+        <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 680 }}>
+          <thead>
+            <tr style={{ background: 'var(--color-surface-muted)' }}>
+              <th style={{ width: 4, padding: 0, borderBottom: '1px solid var(--color-border)' }} />
+              {th('Tanggal')}{th('pH')}{th('DO')}{th('Suhu')}{th('Salinitas')}{th('Status')}{th('Pencatat')}
+            </tr>
+          </thead>
+          <tbody>
+            {entries.map(entry => {
+              const status = checkKualitas(entry, komoditas)
+              const allOk = Object.values(status).every(s => s.ok)
+              const nama = entry.pencatat?.nama ?? pemilikNama
+              return (
+                <tr key={entry.id_kualitas} className="transition-colors"
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-surface-muted)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                  <td style={{ padding: 0, borderBottom: '1px solid var(--color-border)' }}>
+                    <div style={{ width: 4, minHeight: 44, background: allOk ? 'var(--color-risk-best)' : 'var(--color-risk-worst)' }} />
+                  </td>
+                  <td className="px-4 py-3 text-sm" style={{ color: 'var(--color-text-primary)', borderBottom: '1px solid var(--color-border)', whiteSpace: 'nowrap' }}>{formatTanggal(entry.tanggal)}</td>
+                  <ParamCell value={entry.ph} unit="" ok={status.ph?.ok ?? true} />
+                  <ParamCell value={entry.do_ppm} unit=" ppm" ok={status.do_ppm?.ok ?? true} />
+                  <ParamCell value={entry.suhu_celsius} unit="°C" ok={status.suhu?.ok ?? true} />
+                  <ParamCell value={entry.salinitas_ppt} unit=" ppt" ok={status.salinitas?.ok ?? true} />
+                  <td className="px-4 py-3" style={{ borderBottom: '1px solid var(--color-border)', whiteSpace: 'nowrap' }}>
+                    <span className="text-xs font-medium" style={{ color: allOk ? 'var(--color-risk-best)' : 'var(--color-risk-worst)' }}>
+                      {allOk ? 'Normal' : 'Ada anomali'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3" style={{ borderBottom: '1px solid var(--color-border)', whiteSpace: 'nowrap' }}>
+                    {nama ? (
+                      <div className="flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ background: 'var(--color-ocean-100)', color: 'var(--color-ocean-800)' }}>{initials(nama)}</span>
+                        <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{nama}</span>
+                      </div>
+                    ) : <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>—</span>}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
       </div>
-      {hasTarget ? (
-        <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-          <WaterQualityBar label="pH" value={entry.ph} min={komoditas.target_ph_min} max={komoditas.target_ph_max} ok={status.ph?.ok ?? true} />
-          <WaterQualityBar label="DO" value={entry.do_ppm} unit=" ppm" min={komoditas.target_do_min} ok={status.do_ppm?.ok ?? true} />
-          <WaterQualityBar label="Suhu" value={entry.suhu_celsius} unit="°C" min={komoditas.target_suhu_min} max={komoditas.target_suhu_max} ok={status.suhu?.ok ?? true} />
-          <WaterQualityBar label="Salinitas" value={entry.salinitas_ppt} unit=" ppt" min={komoditas.target_salinitas_min} max={komoditas.target_salinitas_max} ok={status.salinitas?.ok ?? true} />
-        </div>
-      ) : (
-        <div className="grid grid-cols-4 gap-2">
-          {[
-            { label: 'pH', val: entry.ph, unit: '' },
-            { label: 'DO', val: entry.do_ppm, unit: ' ppm' },
-            { label: 'Suhu', val: entry.suhu_celsius, unit: '°C' },
-            { label: 'Salinitas', val: entry.salinitas_ppt, unit: ' ppt' },
-          ].map(p => (
-            <div key={p.label} className="rounded-lg p-2.5 text-center" style={{ background: 'var(--color-ocean-50)', border: '1px solid var(--color-ocean-100)' }}>
-              <div className="text-xs mb-0.5" style={{ color: 'var(--color-ocean-500)' }}>{p.label}</div>
-              <div className="text-sm font-bold" style={{ color: 'var(--color-ocean-800)' }}>{p.val}{p.unit}</div>
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="flex items-center gap-4 px-5 py-3 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+        <span className="flex items-center gap-1.5"><span style={{ width: 10, height: 4, borderRadius: 2, background: 'var(--color-risk-best)', display: 'inline-block' }} />Normal</span>
+        <span className="flex items-center gap-1.5"><span style={{ width: 10, height: 4, borderRadius: 2, background: 'var(--color-risk-worst)', display: 'inline-block' }} />Ada anomali</span>
+      </div>
     </div>
   )
 }
@@ -566,6 +591,7 @@ export default function OperasionalDetailPage() {
 
   const komoditas = rencana.komoditas?.nama ? KOMODITAS_LABEL[rencana.komoditas.nama] : '—'
   const idKolam   = rencana.id_kolam
+  const pemilikNama = (rencana.kolam as any)?.pengguna?.nama ?? null
 
   return (
     <div ref={pageRef} className="px-5 py-6 lg:px-8 max-w-3xl mx-auto">
@@ -619,8 +645,8 @@ export default function OperasionalDetailPage() {
           ))}
         </div>
 
-        {tab === 'pakan' ? <TabPakan idRencana={id} />
-          : tab === 'kualitas' ? <TabKualitas idKolam={idKolam} komoditas={rencana.komoditas as any} />
+        {tab === 'pakan' ? <TabPakan idRencana={id} pemilikNama={pemilikNama} />
+          : tab === 'kualitas' ? <TabKualitas idKolam={idKolam} komoditas={rencana.komoditas as any} pemilikNama={pemilikNama} />
           : <TabBiaya idRencana={id} />
         }
       </div>
