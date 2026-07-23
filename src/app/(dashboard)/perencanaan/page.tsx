@@ -241,9 +241,9 @@ export default function PerencanaanPage() {
               onClick={() => setFilter(s)}
               className="px-3 py-1.5 rounded-full text-xs font-medium transition-all capitalize"
               style={{
-                background: filter === s ? 'var(--color-ocean-900)' : 'var(--color-surface)',
+                background: filter === s ? 'var(--color-notion-500)' : 'var(--color-surface-card)',
                 color:      filter === s ? '#fff' : 'var(--color-text-secondary)',
-                border:     `1px solid ${filter === s ? 'transparent' : 'var(--color-border)'}`,
+                border:     `1px solid ${filter === s ? 'var(--color-notion-500)' : 'var(--color-border)'}`,
               }}>
               {s === 'semua' ? 'Semua' : s}
             </button>
