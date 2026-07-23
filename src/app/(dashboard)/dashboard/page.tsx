@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { gsap } from 'gsap'
 import { useGSAP } from '@gsap/react'
@@ -218,6 +218,77 @@ function EmptyHint({ text }: { text: string }) {
 // ════════════════════════════════════════════════════════════
 //  PETAMBAK VIEW
 // ════════════════════════════════════════════════════════════
+// ── Panduan Memulai (onboarding petambak) ──────────────────────
+// Muncul saat belum ada siklus aktif, menuntun langkah pertama.
+// Status tiap langkah dari data nyata; bisa disembunyikan.
+const ONBOARDING_KEY = 'bh-onboarding-dismissed'
+
+function PanduanMemulai({ data }: { data: DashboardData }) {
+  const [dismissed, setDismissed] = useState(true)
+  useEffect(() => { setDismissed(localStorage.getItem(ONBOARDING_KEY) === '1') }, [])
+
+  // Sudah jalan penuh atau sengaja disembunyikan: tidak usah tampil
+  if (data.siklusAktif > 0 || dismissed) return null
+
+  const punyaRencana = data.rencanaDraft.length > 0 || data.menungguApproval > 0
+  const steps = [
+    { done: data.totalKolam > 0, label: 'Kolam siap', desc: 'Admin menautkan kolam ke akun Anda', href: undefined as string | undefined },
+    { done: punyaRencana, label: 'Buat rencana tebar', desc: 'Isi rencana dan skoring risiko, lalu ajukan ke Owner', href: '/perencanaan' },
+    { done: data.siklusAktif > 0, label: 'Aktifkan siklus lalu mulai mencatat', desc: 'Setelah disetujui Owner, aktifkan siklus dan catat operasional harian', href: '/perencanaan' },
+  ]
+  const selesai = steps.filter(s => s.done).length
+  const next = steps.find(s => !s.done)
+
+  const dismiss = () => { localStorage.setItem(ONBOARDING_KEY, '1'); setDismissed(true) }
+
+  return (
+    <div className="card overflow-hidden mb-6">
+      <div className="px-5 pt-5 pb-4 flex items-start justify-between gap-3" style={{ background: 'linear-gradient(135deg, var(--color-ocean-950), var(--color-ocean-800))' }}>
+        <div>
+          <p className="text-sm font-bold" style={{ color: '#fff' }}>Panduan memulai</p>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--color-ocean-200)' }}>
+            {selesai}/{steps.length} langkah selesai. Ikuti langkah berikut untuk mulai budidaya.
+          </p>
+        </div>
+        <button onClick={dismiss} className="text-xs shrink-0 px-2 py-1 rounded-lg transition-colors"
+          style={{ color: 'var(--color-ocean-200)', background: 'rgba(255,255,255,0.08)' }}>
+          Sembunyikan
+        </button>
+      </div>
+      <div className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
+        {steps.map((s, i) => {
+          const isNext = next === s
+          const inner = (
+            <div className="flex items-center gap-3 px-5 py-3.5">
+              <span className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
+                style={{
+                  background: s.done ? 'var(--color-risk-best-bg)' : isNext ? 'var(--color-notion-100)' : 'var(--color-surface-muted)',
+                  color: s.done ? 'var(--color-risk-best)' : isNext ? 'var(--color-notion-600)' : 'var(--color-text-muted)',
+                }}>
+                {s.done ? (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                ) : i + 1}
+              </span>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium" style={{ color: s.done ? 'var(--color-text-muted)' : 'var(--color-text-primary)' }}>{s.label}</div>
+                <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{s.desc}</div>
+              </div>
+              {isNext && s.href && (
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-lg shrink-0" style={{ background: 'var(--color-notion-500)', color: '#fff' }}>Mulai</span>
+              )}
+            </div>
+          )
+          return isNext && s.href
+            ? <Link key={i} href={s.href} className="block transition-colors" style={{ textDecoration: 'none' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-surface-muted)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>{inner}</Link>
+            : <div key={i}>{inner}</div>
+        })}
+      </div>
+    </div>
+  )
+}
+
 function PetambakDashboard({ nama, data, loading }: { nama: string; data: DashboardData; loading: boolean }) {
   return (
     <>
@@ -226,6 +297,8 @@ function PetambakDashboard({ nama, data, loading }: { nama: string; data: Dashbo
           ? `${data.siklusAktif} siklus sedang berjalan. Jangan lupa catat operasional hari ini.`
           : 'Belum ada siklus aktif. Mulai dengan membuat rencana tebar.'}
         cta={{ href: '/operasional', label: 'Catat Operasional' }} />
+
+      {!loading && <PanduanMemulai data={data} />}
 
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-6">
         <StatCard label="Kolam aktif"       value={data.kolamAktif}       unit="kolam"   icon={<IconPond size={17} />}     color="#0284c7" bg="#e0f2fe" loading={loading} />
