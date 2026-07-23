@@ -1,11 +1,11 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { gsap } from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { useRencana } from '@/hooks/useRencana'
-import { usePerbandinganSiklus } from '@/hooks/useLaporan'
+import { useKolamPerformance } from '@/hooks/useLaporan'
 import { useAuth } from '@/hooks/useAuth'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { PerbandinganBarChart } from '@/components/charts/RechartsKit'
@@ -35,38 +35,95 @@ function rupiahCompact(n: number) {
   return `${sign}${formatRupiah(abs)}`
 }
 
-// ── Perbandingan antar siklus (Owner/Admin) ────────────────────
-// Bar chart, bukan pie/line — soalnya ini perbandingan kategori
-// diskrit (per siklus), sesuai kaidah pemilihan chart untuk MIS.
-function PerbandinganSection() {
-  const { data, loading } = usePerbandinganSiklus()
-  if (loading) return <Skeleton height={180} rounded="rounded-2xl" />
-  if (data.length < 2) return null // perbandingan butuh minimal 2 siklus
+// ── Selector performa per kolam (Owner/Admin) ──────────────────
+// Deret chip nama kolam; pilih satu, panel di bawah menampilkan
+// performa kolam itu. Eksploratif satu per satu, bukan semua kolam
+// ditumpuk sekaligus.
+function KpiMini({ label, value, accent }: { label: string; value: string; accent?: 'good' | 'bad' }) {
+  const color = accent === 'good' ? 'var(--color-risk-best)' : accent === 'bad' ? 'var(--color-risk-worst)' : 'var(--color-ocean-800)'
+  return (
+    <div className="rounded-xl p-3" style={{ background: 'var(--color-surface-muted)' }}>
+      <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{label}</div>
+      <div className="text-base font-bold mt-0.5 truncate" style={{ color }}>{value}</div>
+    </div>
+  )
+}
+
+function KolamSelector() {
+  const { data, loading } = useKolamPerformance()
+  const [selected, setSelected] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!selected && data.length > 0) setSelected(data[0].id_kolam)
+  }, [data, selected])
+
+  if (loading) return <div className="mb-6"><Skeleton height={200} rounded="rounded-2xl" /></div>
+  if (data.length === 0) return null
+
+  const aktifKolam = data.find(k => k.id_kolam === selected) ?? data[0]
 
   return (
     <div className="mb-6">
       <h2 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-secondary)' }}>
-        Perbandingan Kinerja Antar Siklus
+        Performa per Kolam
       </h2>
-      <div className="grid sm:grid-cols-2 gap-4">
-        <div className="card p-4">
-          <div className="text-xs font-semibold mb-3" style={{ color: 'var(--color-text-muted)' }}>Profit per Siklus</div>
-          <PerbandinganBarChart
-            data={data.map(d => ({
-              label: d.label,
-              value: d.profit,
-              fill: d.profit >= 0 ? '#16a34a' : '#dc2626',
-            }))}
-            formatValue={rupiahCompact}
-          />
+
+      {/* Chips kolam */}
+      <div className="flex gap-2 overflow-x-auto pb-2 mb-3">
+        {data.map(k => {
+          const on = k.id_kolam === aktifKolam.id_kolam
+          return (
+            <button
+              key={k.id_kolam}
+              onClick={() => setSelected(k.id_kolam)}
+              className="shrink-0 px-3.5 py-2 rounded-xl text-sm font-semibold transition-all"
+              style={{
+                background: on ? 'var(--color-notion-500)' : 'var(--color-surface-card)',
+                color: on ? '#fff' : 'var(--color-text-secondary)',
+                border: `1px solid ${on ? 'var(--color-notion-500)' : 'var(--color-border)'}`,
+                boxShadow: on ? '0 1px 2px rgba(16,24,40,0.08)' : 'none',
+              }}
+            >
+              {k.nama_kolam}
+              <span className="ml-1.5 text-xs" style={{ opacity: 0.75 }}>{k.jumlahSiklus} siklus</span>
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Panel performa kolam terpilih */}
+      <div className="card p-5">
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <div>
+            <div className="text-base font-bold" style={{ color: 'var(--color-text-primary)' }}>{aktifKolam.nama_kolam}</div>
+            <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+              {aktifKolam.komoditasTerakhir ? KOMODITAS_LABEL[aktifKolam.komoditasTerakhir as NamaKomoditas] : '—'}
+              {aktifKolam.siklusTerakhirTanggal ? ` · siklus terakhir ${formatTanggal(aktifKolam.siklusTerakhirTanggal)}` : ''}
+            </div>
+          </div>
         </div>
-        <div className="card p-4">
-          <div className="text-xs font-semibold mb-3" style={{ color: 'var(--color-text-muted)' }}>FCR Rata-rata per Siklus</div>
-          <PerbandinganBarChart
-            data={data.map(d => ({ label: d.label, value: Number(d.fcrRata.toFixed(2)) }))}
-            formatValue={v => v.toFixed(2)}
-          />
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <KpiMini label="Total Produksi" value={`${aktifKolam.totalProduksi.toFixed(0)} kg`} />
+          <KpiMini label="Total Pendapatan" value={rupiahCompact(aktifKolam.totalPendapatan)} />
+          <KpiMini label="Profit" value={rupiahCompact(aktifKolam.profit)} accent={aktifKolam.profit >= 0 ? 'good' : 'bad'} />
+          <KpiMini label="ROI" value={`${aktifKolam.roi.toFixed(0)}%`} accent={aktifKolam.roi >= 0 ? 'good' : 'bad'} />
         </div>
+
+        {aktifKolam.perSiklus.length >= 2 ? (
+          <div>
+            <div className="text-xs font-semibold mb-2" style={{ color: 'var(--color-text-muted)' }}>Profit per Siklus di Kolam Ini</div>
+            <PerbandinganBarChart
+              data={aktifKolam.perSiklus.map(s => ({ label: s.label, value: s.profit, fill: s.profit >= 0 ? '#16a34a' : '#dc2626' }))}
+              formatValue={rupiahCompact}
+              height={180}
+            />
+          </div>
+        ) : (
+          <div className="text-xs rounded-xl p-3" style={{ background: 'var(--color-surface-muted)', color: 'var(--color-text-muted)' }}>
+            Baru {aktifKolam.jumlahSiklus} siklus selesai. Tren antar siklus muncul setelah minimal 2 siklus.
+          </div>
+        )}
       </div>
     </div>
   )
@@ -98,7 +155,7 @@ export default function LaporanPage() {
         </p>
       </div>
 
-      {(role === 'admin' || role === 'owner') && <PerbandinganSection />}
+      {(role === 'admin' || role === 'owner') && <KolamSelector />}
 
       {loading ? (
         <div className="grid sm:grid-cols-2 gap-4">

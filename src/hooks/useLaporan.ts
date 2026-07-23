@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { laporanRepository, type LaporanData, type PerbandinganSiklus } from '@/lib/repositories/laporan.repository'
+import { laporanRepository, type LaporanData, type PerbandinganSiklus, type KolamPerformance } from '@/lib/repositories/laporan.repository'
 
 export function useLaporanList() {
   const [list, setList]     = useState<any[]>([])
@@ -41,6 +41,22 @@ export function usePerbandinganSiklus() {
   }, [])
 
   return { data, loading, error }
+}
+
+export function useKolamPerformance() {
+  const [data, setData]     = useState<KolamPerformance[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let active = true
+    laporanRepository.getKolamPerformance()
+      .then(res => { if (active) setData(res) })
+      .catch(() => { if (active) setData([]) })
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
+  }, [])
+
+  return { data, loading }
 }
 
 export function useLaporanDetail(idRencana: string) {

@@ -30,6 +30,21 @@ export interface PerbandinganSiklus {
   fcrRata: number
 }
 
+export interface KolamPerformance {
+  id_kolam: string
+  nama_kolam: string
+  jumlahSiklus: number
+  totalProduksi: number
+  totalPendapatan: number
+  totalModal: number
+  profit: number
+  roi: number
+  fcrRata: number
+  komoditasTerakhir: string | null
+  siklusTerakhirTanggal: string | null
+  perSiklus: { label: string; profit: number; fcrRata: number }[]
+}
+
 export const laporanRepository = {
   async getSiklusSelesai() {
     const { data, error } = await supabase
@@ -80,6 +95,75 @@ export const laporanRepository = {
         fcrRata: totalProduksi > 0 ? totalPakan / totalProduksi : 0,
       }
     })
+  },
+
+  // Agregasi performa PER KOLAM dari seluruh siklus selesai — untuk
+  // selector kolam di halaman Laporan (pilih kolam, lihat performanya).
+  async getKolamPerformance(): Promise<KolamPerformance[]> {
+    const { data: rencanaRows, error } = await supabase
+      .from('rencana_tebar')
+      .select('id_rencana, id_kolam, modal_rp, tanggal_rencana, kolam(nama_kolam), komoditas(nama)')
+      .eq('status', 'selesai')
+      .order('tanggal_rencana', { ascending: false })
+    if (error) throw error
+    if (!rencanaRows || rencanaRows.length === 0) return []
+
+    const ids = rencanaRows.map((r: any) => r.id_rencana)
+    const [panenRes, operasionalRes] = await Promise.all([
+      supabase.from('panen').select('id_rencana, total_bobot_kg, total_pendapatan').in('id_rencana', ids),
+      supabase.from('operasional_harian').select('id_rencana, jumlah_pakan_kg').in('id_rencana', ids),
+    ])
+    const panenRows = (panenRes.data ?? []) as { id_rencana: string; total_bobot_kg: number; total_pendapatan: number }[]
+    const opRows = (operasionalRes.data ?? []) as { id_rencana: string; jumlah_pakan_kg: number }[]
+
+    const bulan = (t: string) => new Date(t).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: '2-digit' })
+
+    const byKolam = new Map<string, KolamPerformance>()
+    // rencanaRows sudah urut terbaru dulu, jadi entri pertama tiap kolam = siklus terakhir
+    for (const r of rencanaRows as any[]) {
+      const produksi = panenRows.filter(p => p.id_rencana === r.id_rencana).reduce((s, p) => s + Number(p.total_bobot_kg ?? 0), 0)
+      const pendapatan = panenRows.filter(p => p.id_rencana === r.id_rencana).reduce((s, p) => s + Number(p.total_pendapatan ?? 0), 0)
+      const pakan = opRows.filter(o => o.id_rencana === r.id_rencana).reduce((s, o) => s + Number(o.jumlah_pakan_kg ?? 0), 0)
+      const modal = Number(r.modal_rp ?? 0)
+      const fcr = produksi > 0 ? pakan / produksi : 0
+
+      const existing = byKolam.get(r.id_kolam)
+      if (!existing) {
+        byKolam.set(r.id_kolam, {
+          id_kolam: r.id_kolam,
+          nama_kolam: r.kolam?.nama_kolam ?? 'Kolam',
+          jumlahSiklus: 1,
+          totalProduksi: produksi,
+          totalPendapatan: pendapatan,
+          totalModal: modal,
+          profit: pendapatan - modal,
+          roi: 0,
+          fcrRata: fcr,
+          komoditasTerakhir: r.komoditas?.nama ?? null,
+          siklusTerakhirTanggal: r.tanggal_rencana,
+          perSiklus: [{ label: bulan(r.tanggal_rencana), profit: pendapatan - modal, fcrRata: fcr }],
+        })
+      } else {
+        existing.jumlahSiklus += 1
+        existing.totalProduksi += produksi
+        existing.totalPendapatan += pendapatan
+        existing.totalModal += modal
+        existing.profit += pendapatan - modal
+        existing.perSiklus.push({ label: bulan(r.tanggal_rencana), profit: pendapatan - modal, fcrRata: fcr })
+      }
+    }
+
+    // finalisasi: ROI kumulatif, FCR rata-rata tertimbang, urut perSiklus lama→baru
+    const list = [...byKolam.values()].map(k => {
+      const fcrValues = k.perSiklus.map(s => s.fcrRata).filter(v => v > 0)
+      return {
+        ...k,
+        roi: k.totalModal > 0 ? (k.profit / k.totalModal) * 100 : 0,
+        fcrRata: fcrValues.length ? fcrValues.reduce((a, b) => a + b, 0) / fcrValues.length : 0,
+        perSiklus: [...k.perSiklus].reverse(),
+      }
+    })
+    return list.sort((a, b) => b.profit - a.profit)
   },
 
   async getLaporanData(idRencana: string): Promise<LaporanData> {
