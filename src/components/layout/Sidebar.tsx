@@ -184,16 +184,26 @@ export default function Sidebar() {
 }
 
 // ── Mobile Bottom Nav ─────────────────────────────────────────
+// Per role, sama seperti sidebar. Label dipendekkan untuk layar sempit.
 const MOBILE_NAV = [
-  { href: '/dashboard',   label: 'Beranda',   Icon: IconDashboard },
-  { href: '/operasional', label: 'Harian',    Icon: IconOperational },
-  { href: '/sampling',    label: 'Sampling',  Icon: IconSampling },
-  { href: '/panen',       label: 'Panen',     Icon: IconHarvest },
-  { href: '/laporan',     label: 'Laporan',   Icon: IconReport },
+  { href: '/dashboard',   label: 'Beranda',   Icon: IconDashboard,   roles: ['petambak', 'admin', 'owner'] },
+  { href: '/perencanaan', label: 'Rencana',   Icon: IconPlanning,    roles: ['petambak', 'admin', 'owner'] },
+  { href: '/operasional', label: 'Harian',    Icon: IconOperational, roles: ['petambak'] },
+  { href: '/sampling',    label: 'Sampling',  Icon: IconSampling,    roles: ['petambak'] },
+  { href: '/panen',       label: 'Panen',     Icon: IconHarvest,     roles: ['petambak'] },
+  { href: '/komoditas',   label: 'Komoditas', Icon: IconFish,        roles: ['admin'] },
+  { href: '/pengguna',    label: 'Pengguna',  Icon: IconUsers,       roles: ['admin'] },
+  { href: '/laporan',     label: 'Laporan',   Icon: IconReport,      roles: ['admin', 'owner'] },
 ]
 
 export function MobileBottomNav() {
   const pathname = usePathname()
+  const { role, loading } = useAuth()
+
+  // Konsisten dengan sidebar: jangan tampilkan menu apa pun sebelum role
+  // diketahui, supaya tidak ada kilatan menu yang salah.
+  if (loading || !role) return null
+  const items = MOBILE_NAV.filter(item => item.roles.includes(role)).slice(0, 5)
 
   return (
     <nav
@@ -204,7 +214,7 @@ export function MobileBottomNav() {
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >
-      {MOBILE_NAV.map(({ href, label, Icon }) => {
+      {items.map(({ href, label, Icon }) => {
         const isActive = pathname === href || (href !== '/dashboard' && pathname.startsWith(href))
         return (
           <Link
