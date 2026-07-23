@@ -10,6 +10,9 @@ import { useAuth } from '@/hooks/useAuth'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { PerbandinganBarChart, KomposisiDonut, TrenLineChart } from '@/components/charts/RechartsKit'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { laporanRepository } from '@/lib/repositories/laporan.repository'
+import { downloadCsv } from '@/lib/csv'
+import { useToast } from '@/components/ui/Toast'
 import type { NamaKomoditas } from '@/types/database'
 
 gsap.registerPlugin(useGSAP)
@@ -183,11 +186,37 @@ function AnalitikSection() {
 export default function LaporanPage() {
   const { rencana, loading, updateStatus } = useRencana()
   const { role } = useAuth()
+  const toast = useToast()
   const pageRef = useRef<HTMLDivElement>(null)
+  const [exporting, setExporting] = useState(false)
 
   // Laporan mencakup siklus aktif (bisa di-selesaikan) dan yang sudah selesai
   const aktif   = rencana.filter(r => r.status === 'aktif')
   const selesai = rencana.filter(r => r.status === 'selesai')
+
+  const rupiahPlain = (n: number) => Math.round(n)
+
+  const handleExportExcel = async () => {
+    setExporting(true)
+    try {
+      const rows = await laporanRepository.getSiklusExport()
+      if (rows.length === 0) { toast.info('Belum ada siklus selesai untuk diekspor'); return }
+      downloadCsv(
+        `Data-Siklus-Blue-Harvest-${new Date().toISOString().split('T')[0]}`,
+        ['Kolam', 'Komoditas', 'Tanggal Tebar', 'Jumlah Benih', 'Modal (Rp)', 'Produksi (kg)', 'Pendapatan (Rp)', 'Profit (Rp)', 'ROI (%)', 'FCR', 'Survival (%)'],
+        rows.map(r => [
+          r.kolam, r.komoditas, r.tanggalTebar, r.jumlahBenih,
+          rupiahPlain(r.modal), r.produksiKg.toFixed(1), rupiahPlain(r.pendapatan),
+          rupiahPlain(r.profit), r.roiPersen.toFixed(1), r.fcr.toFixed(2), r.survivalPersen.toFixed(1),
+        ]),
+      )
+      toast.success(`${rows.length} siklus diekspor`)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Gagal mengekspor data')
+    } finally {
+      setExporting(false)
+    }
+  }
 
   useGSAP(() => {
     if (loading) return
@@ -197,13 +226,28 @@ export default function LaporanPage() {
 
   return (
     <div ref={pageRef} className="px-5 py-6 lg:px-8 lg:py-8 max-w-4xl mx-auto">
-      <div className="page-header mb-6">
-        <h1 className="text-xl lg:text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-          Laporan & Evaluasi
-        </h1>
-        <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-          Ringkasan kinerja siklus budidaya — produksi, pendapatan, dan FCR
-        </p>
+      <div className="page-header mb-6 flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl lg:text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
+            Laporan & Evaluasi
+          </h1>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+            Ringkasan kinerja siklus budidaya: produksi, pendapatan, dan FCR
+          </p>
+        </div>
+        {(role === 'admin' || role === 'owner') && selesai.length > 0 && (
+          <button
+            onClick={handleExportExcel}
+            disabled={exporting}
+            className="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg transition-colors disabled:opacity-50"
+            style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)', background: 'var(--color-surface-card)' }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            {exporting ? 'Menyiapkan...' : 'Export Excel'}
+          </button>
+        )}
       </div>
 
       {(role === 'admin' || role === 'owner') && <KolamSelector />}

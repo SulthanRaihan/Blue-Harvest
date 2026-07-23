@@ -30,6 +30,20 @@ export interface PerbandinganSiklus {
   fcrRata: number
 }
 
+export interface SiklusExportRow {
+  kolam: string
+  komoditas: string
+  tanggalTebar: string
+  jumlahBenih: number
+  modal: number
+  produksiKg: number
+  pendapatan: number
+  profit: number
+  roiPersen: number
+  fcr: number
+  survivalPersen: number
+}
+
 export interface AnalitikProduksi {
   komposisiKomoditas: { komoditas: string; totalKg: number }[]
   trenSiklus: { label: string; survivalRate: number; fcrRata: number }[]
@@ -220,6 +234,51 @@ export const laporanRepository = {
       komposisiKomoditas: [...komMap.entries()].filter(([, kg]) => kg > 0).map(([komoditas, totalKg]) => ({ komoditas, totalKg })),
       trenSiklus,
     }
+  },
+
+  // Data per siklus selesai untuk diekspor ke Excel/CSV.
+  async getSiklusExport(): Promise<SiklusExportRow[]> {
+    const { data: rencanaRows, error } = await supabase
+      .from('rencana_tebar')
+      .select('id_rencana, jumlah_benih, modal_rp, tanggal_rencana, kolam(nama_kolam), komoditas(nama)')
+      .eq('status', 'selesai')
+      .order('tanggal_rencana', { ascending: false })
+    if (error) throw error
+    const rencana = (rencanaRows ?? []) as any[]
+    if (rencana.length === 0) return []
+
+    const ids = rencana.map(r => r.id_rencana)
+    const [panenRes, opRes, samplingRes] = await Promise.all([
+      supabase.from('panen').select('id_rencana, total_bobot_kg, total_pendapatan').in('id_rencana', ids),
+      supabase.from('operasional_harian').select('id_rencana, jumlah_pakan_kg').in('id_rencana', ids),
+      supabase.from('sampling_pertumbuhan').select('id_rencana, minggu_ke, estimasi_populasi').in('id_rencana', ids),
+    ])
+    const panenRows = (panenRes.data ?? []) as { id_rencana: string; total_bobot_kg: number; total_pendapatan: number }[]
+    const opRows = (opRes.data ?? []) as { id_rencana: string; jumlah_pakan_kg: number }[]
+    const samplingRows = (samplingRes.data ?? []) as { id_rencana: string; minggu_ke: number; estimasi_populasi: number }[]
+
+    return rencana.map(r => {
+      const produksi = panenRows.filter(p => p.id_rencana === r.id_rencana).reduce((s, p) => s + Number(p.total_bobot_kg ?? 0), 0)
+      const pendapatan = panenRows.filter(p => p.id_rencana === r.id_rencana).reduce((s, p) => s + Number(p.total_pendapatan ?? 0), 0)
+      const pakan = opRows.filter(o => o.id_rencana === r.id_rencana).reduce((s, o) => s + Number(o.jumlah_pakan_kg ?? 0), 0)
+      const modal = Number(r.modal_rp ?? 0)
+      const benih = Number(r.jumlah_benih ?? 0)
+      const terakhir = samplingRows.filter(s => s.id_rencana === r.id_rencana).sort((a, b) => b.minggu_ke - a.minggu_ke)[0]
+      const profit = pendapatan - modal
+      return {
+        kolam: r.kolam?.nama_kolam ?? '-',
+        komoditas: r.komoditas?.nama ?? '-',
+        tanggalTebar: r.tanggal_rencana,
+        jumlahBenih: benih,
+        modal,
+        produksiKg: produksi,
+        pendapatan,
+        profit,
+        roiPersen: modal > 0 ? (profit / modal) * 100 : 0,
+        fcr: produksi > 0 ? pakan / produksi : 0,
+        survivalPersen: terakhir && benih > 0 ? (Number(terakhir.estimasi_populasi) / benih) * 100 : 0,
+      }
+    })
   },
 
   async getLaporanData(idRencana: string): Promise<LaporanData> {
