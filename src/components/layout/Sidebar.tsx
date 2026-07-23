@@ -37,9 +37,14 @@ const ROLE_LABEL: Record<string, string> = {
 export default function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
-  const { user, role, nama } = useAuth()
+  const { user, role, nama, loading } = useAuth()
   const sidebarRef = useRef<HTMLElement>(null)
   const [loggingOut, setLoggingOut] = useState(false)
+
+  // Nav hanya di-filter setelah role diketahui. Sebelumnya filter pakai
+  // `!role || ...` yang membuat SEMUA menu muncul sesaat saat role masih
+  // loading, lalu menyusut ke menu per role — kilatan menu yang salah.
+  const visibleNav = role ? NAV_ITEMS.filter(item => item.roles.includes(role)) : []
 
   useGSAP(() => {
     // Cuma animasikan posisi (bukan opacity/autoAlpha) — di React Strict Mode
@@ -48,6 +53,7 @@ export default function Sidebar() {
     // bisa macet permanen di opacity rendah/visibility:hidden (nav jadi
     // hilang). Animasi posisi saja aman: interupsi paling parah cuma bikin
     // sedikit offset, item tetap selalu terlihat penuh.
+    if (!visibleNav.length) return
     gsap.from('.nav-item', {
       x: -16,
       duration: 0.4,
@@ -56,17 +62,13 @@ export default function Sidebar() {
       delay: 0.1,
       clearProps: 'transform',
     })
-  }, { scope: sidebarRef })
+  }, { scope: sidebarRef, dependencies: [visibleNav.length] })
 
   const handleLogout = async () => {
     setLoggingOut(true)
     await supabase.auth.signOut()
     router.replace('/login')
   }
-
-  const visibleNav = NAV_ITEMS.filter(item =>
-    !role || item.roles.includes(role)
-  )
 
   const userName = nama
     ?? user?.user_metadata?.nama
@@ -99,7 +101,15 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-0.5">
-        {visibleNav.map(({ href, label, Icon }) => {
+        {loading && visibleNav.length === 0 ? (
+          // Skeleton nav saat role belum ke-resolve, bukan semua menu
+          Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3 px-3 py-2.5">
+              <div className="w-[17px] h-[17px] rounded" style={{ background: 'rgba(255,255,255,0.08)' }} />
+              <div className="h-3 rounded" style={{ width: 90 - i * 8, background: 'rgba(255,255,255,0.08)' }} />
+            </div>
+          ))
+        ) : visibleNav.map(({ href, label, Icon }) => {
           const isActive = pathname === href || (href !== '/dashboard' && pathname.startsWith(href))
           return (
             <Link
