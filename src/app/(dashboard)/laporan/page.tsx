@@ -5,10 +5,10 @@ import Link from 'next/link'
 import { gsap } from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { useRencana } from '@/hooks/useRencana'
-import { useKolamPerformance } from '@/hooks/useLaporan'
+import { useKolamPerformance, useAnalitikProduksi } from '@/hooks/useLaporan'
 import { useAuth } from '@/hooks/useAuth'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { PerbandinganBarChart } from '@/components/charts/RechartsKit'
+import { PerbandinganBarChart, KomposisiDonut, TrenLineChart } from '@/components/charts/RechartsKit'
 import { EmptyState } from '@/components/ui/EmptyState'
 import type { NamaKomoditas } from '@/types/database'
 
@@ -129,6 +129,57 @@ function KolamSelector() {
   )
 }
 
+// ── Analitik produksi lintas siklus (Owner/Admin) ──────────────
+function AnalitikSection() {
+  const { data, loading } = useAnalitikProduksi()
+  if (loading) return <div className="mb-6"><Skeleton height={220} rounded="rounded-2xl" /></div>
+  if (data.komposisiKomoditas.length === 0) return null
+
+  const komposisi = data.komposisiKomoditas.map(k => ({
+    label: KOMODITAS_LABEL[k.komoditas as NamaKomoditas] ?? k.komoditas,
+    value: Number(k.totalKg.toFixed(0)),
+  }))
+  const punyaTren = data.trenSiklus.length >= 2
+
+  return (
+    <div className="mb-6">
+      <h2 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-secondary)' }}>
+        Analitik Produksi
+      </h2>
+      <div className="grid lg:grid-cols-2 gap-4">
+        <div className="card p-4">
+          <div className="text-xs font-semibold mb-3" style={{ color: 'var(--color-text-muted)' }}>Komposisi Produksi per Komoditas</div>
+          <KomposisiDonut data={komposisi} formatValue={v => `${v.toLocaleString('id-ID')} kg`} />
+        </div>
+        <div className="card p-4">
+          <div className="text-xs font-semibold mb-3" style={{ color: 'var(--color-text-muted)' }}>Tren Survival Rate per Siklus</div>
+          {punyaTren ? (
+            <TrenLineChart
+              data={data.trenSiklus.map(s => ({ label: s.label, value: Number(s.survivalRate.toFixed(1)) }))}
+              color="#0f766e" unit="%"
+              formatValue={v => `${v}%`}
+            />
+          ) : (
+            <div className="text-xs rounded-xl p-3" style={{ background: 'var(--color-surface-muted)', color: 'var(--color-text-muted)' }}>
+              Tren muncul setelah minimal 2 siklus selesai.
+            </div>
+          )}
+        </div>
+        {punyaTren && (
+          <div className="card p-4 lg:col-span-2">
+            <div className="text-xs font-semibold mb-3" style={{ color: 'var(--color-text-muted)' }}>Tren FCR per Siklus (makin rendah makin efisien)</div>
+            <TrenLineChart
+              data={data.trenSiklus.map(s => ({ label: s.label, value: Number(s.fcrRata.toFixed(2)) }))}
+              color="#d97706"
+              formatValue={v => v.toFixed(2)}
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function LaporanPage() {
   const { rencana, loading, updateStatus } = useRencana()
   const { role } = useAuth()
@@ -156,6 +207,7 @@ export default function LaporanPage() {
       </div>
 
       {(role === 'admin' || role === 'owner') && <KolamSelector />}
+      {(role === 'admin' || role === 'owner') && <AnalitikSection />}
 
       {loading ? (
         <div className="grid sm:grid-cols-2 gap-4">

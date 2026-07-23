@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { laporanRepository, type LaporanData, type PerbandinganSiklus, type KolamPerformance } from '@/lib/repositories/laporan.repository'
+import { laporanRepository, type LaporanData, type PerbandinganSiklus, type KolamPerformance, type AnalitikProduksi } from '@/lib/repositories/laporan.repository'
 
 export function useLaporanList() {
   const [list, setList]     = useState<any[]>([])
@@ -52,6 +52,22 @@ export function useKolamPerformance() {
     laporanRepository.getKolamPerformance()
       .then(res => { if (active) setData(res) })
       .catch(() => { if (active) setData([]) })
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
+  }, [])
+
+  return { data, loading }
+}
+
+export function useAnalitikProduksi() {
+  const [data, setData] = useState<AnalitikProduksi>({ komposisiKomoditas: [], trenSiklus: [] })
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let active = true
+    laporanRepository.getAnalitikProduksi()
+      .then(res => { if (active) setData(res) })
+      .catch(() => { if (active) setData({ komposisiKomoditas: [], trenSiklus: [] }) })
       .finally(() => { if (active) setLoading(false) })
     return () => { active = false }
   }, [])

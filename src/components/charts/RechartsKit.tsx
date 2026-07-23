@@ -1,8 +1,8 @@
 'use client'
 
 import {
-  ResponsiveContainer, AreaChart, Area, BarChart, Bar,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, Cell,
+  ResponsiveContainer, AreaChart, Area, BarChart, Bar, LineChart, Line,
+  PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Cell,
 } from 'recharts'
 
 // Palet konsisten dengan token aplikasi. Recharts menerima string CSS
@@ -19,6 +19,9 @@ const COLOR = {
 }
 
 const axisTick = { fontSize: 11, fill: COLOR.axis }
+
+// Palet kategori untuk donut komposisi, konsisten dengan token app.
+const DONUT_COLORS = ['#1560a0', '#0f766e', '#d97706', '#7c3aed', '#0284c7', '#dc2626']
 
 // ── Tooltip bertema ────────────────────────────────────────────
 function ThemedTooltip({ active, payload, label, formatValue }: any) {
@@ -84,6 +87,50 @@ export interface BarPoint {
   label: string
   value: number
   fill?: string
+}
+
+// ── Donut komposisi (part-to-whole) ────────────────────────────
+export function KomposisiDonut({ data, formatValue, height = 200 }: {
+  data: { label: string; value: number }[]
+  formatValue?: (v: number) => string
+  height?: number
+}) {
+  const fmt = formatValue ?? ((v: number) => v.toLocaleString('id-ID'))
+  const total = data.reduce((s, d) => s + d.value, 0)
+  if (total === 0) return null
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <PieChart>
+        <Pie data={data} dataKey="value" nameKey="label" cx="50%" cy="50%" innerRadius={45} outerRadius={72} paddingAngle={2} stroke="var(--color-surface-card)" strokeWidth={2}>
+          {data.map((_, i) => <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />)}
+        </Pie>
+        <Tooltip content={<ThemedTooltip formatValue={(v: number) => `${fmt(v)} (${((v / total) * 100).toFixed(0)}%)`} />} />
+        <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
+      </PieChart>
+    </ResponsiveContainer>
+  )
+}
+
+// ── Line chart satu seri (tren) ────────────────────────────────
+export function TrenLineChart({ data, color = COLOR.owner, unit = '', formatValue, height = 180 }: {
+  data: { label: string; value: number }[]
+  color?: string
+  unit?: string
+  formatValue?: (v: number) => string
+  height?: number
+}) {
+  const compact = formatValue ?? ((v: number) => v.toLocaleString('id-ID'))
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <LineChart data={data} margin={{ top: 8, right: 8, left: 4, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke={COLOR.grid} vertical={false} />
+        <XAxis dataKey="label" tick={axisTick} tickLine={false} axisLine={{ stroke: COLOR.grid }} interval={0} />
+        <YAxis tick={axisTick} tickLine={false} axisLine={false} width={44} tickFormatter={compact} />
+        <Tooltip content={<ThemedTooltip formatValue={(v: number) => `${compact(v)}${unit}`} />} />
+        <Line type="monotone" dataKey="value" name="Nilai" stroke={color} strokeWidth={2.5} dot={{ r: 3, fill: color }} activeDot={{ r: 5 }} />
+      </LineChart>
+    </ResponsiveContainer>
+  )
 }
 
 export function PerbandinganBarChart({ data, unit = '', formatValue, height = 220 }: {

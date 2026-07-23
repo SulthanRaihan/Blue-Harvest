@@ -30,6 +30,11 @@ export interface PerbandinganSiklus {
   fcrRata: number
 }
 
+export interface AnalitikProduksi {
+  komposisiKomoditas: { komoditas: string; totalKg: number }[]
+  trenSiklus: { label: string; survivalRate: number; fcrRata: number }[]
+}
+
 export interface KolamPerformance {
   id_kolam: string
   nama_kolam: string
@@ -164,6 +169,57 @@ export const laporanRepository = {
       }
     })
     return list.sort((a, b) => b.profit - a.profit)
+  },
+
+  // Analitik lintas siklus untuk halaman Laporan (Owner/Admin):
+  // komposisi produksi per komoditas + tren survival rate & FCR.
+  async getAnalitikProduksi(): Promise<AnalitikProduksi> {
+    const { data: rencanaRows, error } = await supabase
+      .from('rencana_tebar')
+      .select('id_rencana, jumlah_benih, tanggal_rencana, komoditas(nama)')
+      .eq('status', 'selesai')
+      .order('tanggal_rencana', { ascending: true })
+    if (error) throw error
+    const rencana = (rencanaRows ?? []) as any[]
+    if (rencana.length === 0) return { komposisiKomoditas: [], trenSiklus: [] }
+
+    const ids = rencana.map(r => r.id_rencana)
+    const [panenRes, opRes, samplingRes] = await Promise.all([
+      supabase.from('panen').select('id_rencana, total_bobot_kg').in('id_rencana', ids),
+      supabase.from('operasional_harian').select('id_rencana, jumlah_pakan_kg').in('id_rencana', ids),
+      supabase.from('sampling_pertumbuhan').select('id_rencana, minggu_ke, estimasi_populasi').in('id_rencana', ids),
+    ])
+    const panenRows = (panenRes.data ?? []) as { id_rencana: string; total_bobot_kg: number }[]
+    const opRows = (opRes.data ?? []) as { id_rencana: string; jumlah_pakan_kg: number }[]
+    const samplingRows = (samplingRes.data ?? []) as { id_rencana: string; minggu_ke: number; estimasi_populasi: number }[]
+
+    const bulan = (t: string) => new Date(t).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: '2-digit' })
+
+    // Komposisi produksi per komoditas (total kg panen)
+    const komMap = new Map<string, number>()
+    // Tren per siklus (survival rate + FCR)
+    const trenSiklus: AnalitikProduksi['trenSiklus'] = []
+
+    for (const r of rencana) {
+      const produksi = panenRows.filter(p => p.id_rencana === r.id_rencana).reduce((s, p) => s + Number(p.total_bobot_kg ?? 0), 0)
+      const pakan = opRows.filter(o => o.id_rencana === r.id_rencana).reduce((s, o) => s + Number(o.jumlah_pakan_kg ?? 0), 0)
+      const kom = r.komoditas?.nama ?? 'lainnya'
+      komMap.set(kom, (komMap.get(kom) ?? 0) + produksi)
+
+      // survival = populasi sampling terakhir / jumlah benih
+      const samplingForR = samplingRows.filter(s => s.id_rencana === r.id_rencana)
+      const terakhir = samplingForR.sort((a, b) => b.minggu_ke - a.minggu_ke)[0]
+      const benih = Number(r.jumlah_benih ?? 0)
+      const survivalRate = terakhir && benih > 0 ? (Number(terakhir.estimasi_populasi) / benih) * 100 : 0
+      const fcrRata = produksi > 0 ? pakan / produksi : 0
+
+      trenSiklus.push({ label: bulan(r.tanggal_rencana), survivalRate, fcrRata })
+    }
+
+    return {
+      komposisiKomoditas: [...komMap.entries()].filter(([, kg]) => kg > 0).map(([komoditas, totalKg]) => ({ komoditas, totalKg })),
+      trenSiklus,
+    }
   },
 
   async getLaporanData(idRencana: string): Promise<LaporanData> {
