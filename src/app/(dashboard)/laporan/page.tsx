@@ -8,6 +8,7 @@ import { useRencana } from '@/hooks/useRencana'
 import { useKolamPerformance, useAnalitikProduksi } from '@/hooks/useLaporan'
 import { useAuth } from '@/hooks/useAuth'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { PerbandinganBarChart, KomposisiDonut, TrenLineChart } from '@/components/charts/RechartsKit'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { laporanRepository } from '@/lib/repositories/laporan.repository'
@@ -226,20 +227,14 @@ export default function LaporanPage() {
 
   return (
     <div ref={pageRef} className="px-5 py-6 lg:px-8 lg:py-8 max-w-4xl mx-auto">
-      <div className="page-header mb-6 flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl lg:text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-            Laporan & Evaluasi
-          </h1>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-            Ringkasan kinerja siklus budidaya: produksi, pendapatan, dan FCR
-          </p>
-        </div>
-        {(role === 'admin' || role === 'owner') && selesai.length > 0 && (
+      <PageHeader
+        title="Laporan & Evaluasi"
+        subtitle="Ringkasan kinerja siklus budidaya: produksi, pendapatan, dan FCR"
+        actions={(role === 'admin' || role === 'owner') && selesai.length > 0 ? (
           <button
             onClick={handleExportExcel}
             disabled={exporting}
-            className="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg transition-colors disabled:opacity-50"
             style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)', background: 'var(--color-surface-card)' }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -247,8 +242,8 @@ export default function LaporanPage() {
             </svg>
             {exporting ? 'Menyiapkan...' : 'Export Excel'}
           </button>
-        )}
-      </div>
+        ) : undefined}
+      />
 
       {(role === 'admin' || role === 'owner') && <KolamSelector />}
       {(role === 'admin' || role === 'owner') && <AnalitikSection />}

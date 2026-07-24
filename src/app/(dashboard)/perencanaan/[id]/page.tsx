@@ -84,7 +84,7 @@ function RiskMeter({ total, kategori }: { total: number; kategori: KategoriRisik
   const cfg     = KATEGORI_CONFIG[kategori]
 
   return (
-    <div className="rounded-2xl p-5" style={{ background: cfg.bg, border: `1px solid ${cfg.border}` }}>
+    <div className="rounded-xl p-5" style={{ background: cfg.bg, border: `1px solid ${cfg.border}` }}>
       <div className="flex items-center justify-between mb-3">
         <div>
           <div className="text-xs font-medium mb-0.5" style={{ color: cfg.color }}>Kategori Risiko</div>
@@ -120,7 +120,7 @@ function RiskMeter({ total, kategori }: { total: number; kategori: KategoriRisik
 function InsightBox({ insight }: { insight: { ringkasan: string; rekomendasi: string } }) {
   if (!insight.rekomendasi) return null
   return (
-    <div className="rounded-2xl p-4 mt-3" style={{ background: 'var(--color-ocean-50)', border: '1px solid var(--color-ocean-100)' }}>
+    <div className="rounded-xl p-4 mt-3" style={{ background: 'var(--color-ocean-50)', border: '1px solid var(--color-ocean-100)' }}>
       <div className="flex items-center gap-2 mb-2">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-ocean-700)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M12 2a7 7 0 00-4 12.7V17a2 2 0 002 2h4a2 2 0 002-2v-2.3A7 7 0 0012 2z" />
@@ -409,7 +409,7 @@ export default function RencanaDetailPage() {
 
       {/* Estimasi omset — cuma buat siklus aktif, dari biomassa sampling terakhir */}
       {rencana.status === 'aktif' && estimasiOmset?.estimasiOmset != null && (
-        <div className="detail-section rounded-2xl p-4 mb-6" style={{ background: 'var(--color-ocean-50)', border: '1px solid var(--color-ocean-100)' }}>
+        <div className="detail-section rounded-xl p-4 mb-6" style={{ background: 'var(--color-ocean-50)', border: '1px solid var(--color-ocean-100)' }}>
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--color-ocean-700)' }}>
               Estimasi Omset

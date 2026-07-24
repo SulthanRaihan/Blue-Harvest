@@ -8,6 +8,7 @@ import { usePanenByRencana, useDistribusi } from '@/hooks/usePanen'
 import { Modal, Field, Input, Select, ModalActions } from '@/components/ui/Modal'
 import { StatusBadge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { useToast } from '@/components/ui/Toast'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { uploadFoto } from '@/lib/storage'
@@ -356,14 +357,10 @@ export default function PanenPage() {
 
   return (
     <div ref={pageRef} className="px-5 py-6 lg:px-8 lg:py-8 max-w-3xl mx-auto">
-      <div className="page-header mb-6">
-        <h1 className="text-xl lg:text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-          Panen & Distribusi
-        </h1>
-        <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-          Catat hasil panen dan atur distribusi produk ke pengepul / pasar
-        </p>
-      </div>
+      <PageHeader
+        title="Panen & Distribusi"
+        subtitle="Catat hasil panen dan atur distribusi produk ke pengepul / pasar"
+      />
 
       {loading ? (
         <div className="flex flex-col gap-6">

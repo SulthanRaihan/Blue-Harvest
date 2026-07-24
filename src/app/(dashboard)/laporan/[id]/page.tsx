@@ -217,7 +217,7 @@ export default function LaporanDetailPage() {
       {/* FCR assessment */}
       {fcrStandar && (
         <div className="report-section mb-5">
-          <div className="rounded-2xl p-4" style={{
+          <div className="rounded-xl p-4" style={{
             background: fcrOk ? 'var(--color-risk-best-bg)' : 'var(--color-risk-worst-bg)',
             border: `1px solid ${fcrOk ? '#bbf7d0' : '#fca5a5'}`,
           }}>
@@ -242,7 +242,7 @@ export default function LaporanDetailPage() {
       {/* Insight perbandingan siklus — rule-based, dari data siklus sebelumnya */}
       {insightPerbandingan && (
         <div className="report-section mb-5">
-          <div className="rounded-2xl p-4" style={{ background: 'var(--color-ocean-50)', border: '1px solid var(--color-ocean-100)' }}>
+          <div className="rounded-xl p-4" style={{ background: 'var(--color-ocean-50)', border: '1px solid var(--color-ocean-100)' }}>
             <div className="flex items-center gap-2 mb-1.5">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-ocean-700)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M3 3v18h18" /><path d="M7 16l4-5 4 3 4-6" />

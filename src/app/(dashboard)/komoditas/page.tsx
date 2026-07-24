@@ -6,6 +6,7 @@ import { useGSAP } from '@gsap/react'
 import { useKomoditas, KOMODITAS_LABEL } from '@/hooks/useKomoditas'
 import { Modal, Field, Input, ModalActions } from '@/components/ui/Modal'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { IconFish } from '@/components/ui/Icon'
 import { useToast } from '@/components/ui/Toast'
 import type { Komoditas } from '@/types/database'
@@ -193,14 +194,10 @@ export default function KomoditasPage() {
 
   return (
     <div ref={pageRef} className="px-5 py-6 lg:px-8 lg:py-8 max-w-4xl mx-auto">
-      <div className="page-header mb-6">
-        <h1 className="text-xl lg:text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-          Kelola Komoditas
-        </h1>
-        <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-          Data master target kualitas air, standar FCR, dan harga acuan per komoditas
-        </p>
-      </div>
+      <PageHeader
+        title="Kelola Komoditas"
+        subtitle="Data master target kualitas air, standar FCR, dan harga acuan per komoditas"
+      />
 
       {error && (
         <div className="mb-4 rounded-xl p-4 text-sm" style={{ background: 'var(--color-risk-worst-bg)', color: 'var(--color-risk-worst)' }}>

@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Modal, Field, Input, Select, ModalActions } from '@/components/ui/Modal'
 import { StatusBadge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { PageHeader } from '@/components/ui/PageHeader'
 import type { StatusRencana } from '@/types/database'
 
 gsap.registerPlugin(useGSAP)
@@ -214,24 +215,18 @@ export default function PerencanaanPage() {
   return (
     <div ref={pageRef} className="px-5 py-6 lg:px-8 lg:py-8 max-w-5xl mx-auto">
       {/* Header */}
-      <div className="page-header flex items-start justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-xl lg:text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-            Perencanaan Budidaya
-          </h1>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-            Buat rencana tebar dan analisis risiko sebelum memulai siklus budidaya
-          </p>
-        </div>
-        {canCreate && (
+      <PageHeader
+        title="Perencanaan Budidaya"
+        subtitle="Buat rencana tebar dan analisis risiko sebelum memulai siklus budidaya"
+        actions={canCreate ? (
           <button
             onClick={() => { setFormError(null); setOpen(true) }}
-            className="shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
-            style={{ background: 'var(--color-notion-500)', color: '#fff', boxShadow: '0 2px 10px rgba(11,45,78,0.25)' }}>
+            className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all"
+            style={{ background: 'var(--color-notion-500)', color: '#fff', boxShadow: '0 2px 8px rgba(11,45,78,0.25)' }}>
             <span className="text-base leading-none">+</span> Buat Rencana
           </button>
-        )}
-      </div>
+        ) : undefined}
+      />
 
       {/* Filter bar */}
       {!loading && rencana.length > 0 && (

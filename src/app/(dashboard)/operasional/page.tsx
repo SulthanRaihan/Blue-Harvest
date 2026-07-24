@@ -6,6 +6,7 @@ import { gsap } from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { useRencana } from '@/hooks/useRencana'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { PageHeader } from '@/components/ui/PageHeader'
 import type { NamaKomoditas } from '@/types/database'
 
 gsap.registerPlugin(useGSAP)
@@ -67,14 +68,10 @@ export default function OperasionalPage() {
 
   return (
     <div ref={pageRef} className="px-5 py-6 lg:px-8 lg:py-8 max-w-4xl mx-auto">
-      <div className="page-header mb-6">
-        <h1 className="text-xl lg:text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-          Operasional Harian
-        </h1>
-        <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-          Log pakan, kualitas air, dan catatan hama/penyakit untuk setiap siklus aktif
-        </p>
-      </div>
+      <PageHeader
+        title="Operasional Harian"
+        subtitle="Log pakan, kualitas air, dan catatan hama/penyakit untuk setiap siklus aktif"
+      />
 
       {loading ? (
         <div className="grid sm:grid-cols-2 gap-4">
