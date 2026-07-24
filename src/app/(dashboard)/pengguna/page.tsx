@@ -30,6 +30,33 @@ function EmptyState({ label }: { label: string }) {
   )
 }
 
+// ── Search box ────────────────────────────────────────────────
+function SearchBox({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
+  return (
+    <div className="relative flex-1 min-w-0 max-w-xs">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+        className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--color-text-muted)' }}>
+        <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+      </svg>
+      <input
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full pl-9 pr-8 py-2 text-sm rounded-lg outline-none transition-all"
+        style={{ background: 'var(--color-surface-muted)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}
+        onFocus={e => { e.currentTarget.style.borderColor = 'var(--color-accent)'; e.currentTarget.style.background = 'var(--color-surface-card)' }}
+        onBlur={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.background = 'var(--color-surface-muted)' }}
+      />
+      {value && (
+        <button onClick={() => onChange('')} className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 rounded flex items-center justify-center"
+          style={{ color: 'var(--color-text-muted)' }} aria-label="Hapus pencarian">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+        </button>
+      )}
+    </div>
+  )
+}
+
 // ── Meta row untuk kartu kolam ────────────────────────────────
 function MetaRow({ label, value }: { label: string; value: string }) {
   return (
@@ -72,9 +99,14 @@ function TabPengguna() {
   const [editRole, setEditRole]     = useState<UserRole>('petambak')
   const [saving, setSaving]         = useState(false)
   const [formError, setFormError]   = useState<string | null>(null)
+  const [query, setQuery]           = useState('')
 
   // Add user form state
   const [form, setForm] = useState({ nama: '', email: '', password: '', role: 'petambak' as UserRole })
+
+  const filtered = pengguna.filter(p =>
+    `${p.nama} ${p.email}`.toLowerCase().includes(query.trim().toLowerCase())
+  )
 
   const handleAddUser = async () => {
     if (!form.nama || !form.email || !form.password) {
@@ -119,13 +151,16 @@ function TabPengguna() {
   return (
     <>
       {/* Header row */}
-      <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--color-border)' }}>
-        <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-          {loading ? '...' : `${pengguna.length} pengguna terdaftar`}
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--color-border)' }}>
+        <div className="flex items-center gap-3 flex-1">
+          <SearchBox value={query} onChange={setQuery} placeholder="Cari nama atau email..." />
+          <p className="text-sm shrink-0 hidden sm:block" style={{ color: 'var(--color-text-muted)' }}>
+            {loading ? '...' : `${filtered.length} pengguna`}
+          </p>
+        </div>
         <button
           onClick={() => { setFormError(null); setAddOpen(true) }}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all"
+          className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all shrink-0"
           style={{ background: 'var(--color-notion-500)', color: '#fff', boxShadow: '0 2px 8px rgba(11,45,78,0.25)' }}
         >
           <span className="text-base leading-none">+</span> Tambah Pengguna
@@ -139,9 +174,11 @@ function TabPengguna() {
         <div className="px-5 py-4 text-sm" style={{ color: 'var(--color-risk-worst)' }}>{error}</div>
       ) : pengguna.length === 0 ? (
         <EmptyState label="Belum ada pengguna terdaftar" />
+      ) : filtered.length === 0 ? (
+        <div className="px-5 py-10 text-center text-sm" style={{ color: 'var(--color-text-muted)' }}>Tidak ada pengguna yang cocok dengan &quot;{query}&quot;.</div>
       ) : (
         <div className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
-          {pengguna.map(p => {
+          {filtered.map(p => {
             const initials = p.nama.slice(0, 2).toUpperCase()
             const isSelf = p.id_pengguna === currentUser?.id
             return (
@@ -244,8 +281,13 @@ function TabKolam() {
   const [saving, setSaving]         = useState(false)
   const [formError, setFormError]   = useState<string | null>(null)
   const [toggleError, setToggleError] = useState<string | null>(null)
+  const [query, setQuery]           = useState('')
   const emptyForm = { nama_kolam: '', luas_ha: '', lokasi: '', id_pengguna: '' }
   const [form, setForm]             = useState(emptyForm)
+
+  const filtered = kolam.filter(k =>
+    `${k.nama_kolam} ${k.lokasi ?? ''} ${k.pengguna?.nama ?? ''}`.toLowerCase().includes(query.trim().toLowerCase())
+  )
 
   const handleToggle = async (id: string, status: typeof kolam[0]['status'], nama: string) => {
     setToggleError(null)
@@ -315,13 +357,16 @@ function TabKolam() {
   return (
     <>
       {/* Header row */}
-      <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--color-border)' }}>
-        <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-          {loading ? '...' : `${kolam.length} kolam terdaftar`}
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--color-border)' }}>
+        <div className="flex items-center gap-3 flex-1">
+          <SearchBox value={query} onChange={setQuery} placeholder="Cari kolam, lokasi, petambak..." />
+          <p className="text-sm shrink-0 hidden sm:block" style={{ color: 'var(--color-text-muted)' }}>
+            {loading ? '...' : `${filtered.length} kolam`}
+          </p>
+        </div>
         <button
           onClick={openAdd}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all"
+          className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all shrink-0"
           style={{ background: 'var(--color-notion-500)', color: '#fff', boxShadow: '0 2px 8px rgba(11,45,78,0.25)' }}
         >
           <span className="text-base leading-none">+</span> Tambah Kolam
@@ -341,9 +386,11 @@ function TabKolam() {
         <div className="px-5 py-4 text-sm" style={{ color: 'var(--color-risk-worst)' }}>{error}</div>
       ) : kolam.length === 0 ? (
         <EmptyState label="Belum ada kolam terdaftar" />
+      ) : filtered.length === 0 ? (
+        <div className="px-5 py-10 text-center text-sm" style={{ color: 'var(--color-text-muted)' }}>Tidak ada kolam yang cocok dengan &quot;{query}&quot;.</div>
       ) : (
         <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4 p-5">
-          {kolam.map(k => {
+          {filtered.map(k => {
             const aktif = k.status === 'aktif'
             return (
               <div key={k.id_kolam} className="kolam-card card card-hover overflow-hidden flex flex-col">
